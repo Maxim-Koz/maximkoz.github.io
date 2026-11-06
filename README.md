@@ -1,4 +1,4 @@
-# Maxim Kozlov
+# Maxim Kozlovskiy
 
 Personal website and portfolio project.
 
