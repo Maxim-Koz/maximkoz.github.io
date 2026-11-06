@@ -1,49 +1,63 @@
-# Maxim Kozlovskiy
+# Astro Starter Kit: Blog
 
-Personal website and portfolio project.
-
-## Overview
-
-This repository will host my personal website in the future. It is intended to contain:
-
-- personal biography and introduction
-- portfolio/projects section
-- contact information
-- blog or writing section
-- other website content as it evolves
-
-## Current Status
-
-This project is currently in its early setup stage. Content, structure, and design will be added over time.
-
-## Planned Sections
-
-- Home
-- About
-- Projects
-- Resume / CV
-- Contact
-- Blog / Notes
-
-## Local Development
-
-To work on this site locally, open the project folder in a browser-friendly static site setup or use your preferred web tooling.
-
-Example future workflow:
-
-```bash
-# example commands for future use
-# npm install
-# npm run dev
+```sh
+npm create astro@latest -- --template blog
 ```
 
-## Repository Goals
+> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
 
-- keep the site simple and maintainable
-- showcase work and interests clearly
-- build a professional online presence
-- evolve into a complete personal website over time
+Features:
 
-## License
+- ✅ Minimal styling (make it your own!)
+- ✅ 100/100 Lighthouse performance
+- ✅ SEO-friendly with canonical URLs and Open Graph data
+- ✅ Sitemap support
+- ✅ RSS Feed support
+- ✅ Markdown & MDX support
 
-This project is currently unlicensed unless otherwise stated.
+## 🚀 Project Structure
+
+Inside of your Astro project, you'll see the following folders and files:
+
+```text
+├── public/
+├── src/
+│   ├── assets/
+│   ├── components/
+│   ├── content/
+│   ├── layouts/
+│   └── pages/
+├── astro.config.mjs
+├── README.md
+├── package.json
+└── tsconfig.json
+```
+
+Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+
+There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+
+The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+
+Any static assets, like images, can be placed in the `public/` directory.
+
+## 🧞 Commands
+
+All commands are run from the root of the project, from a terminal:
+
+| Command                   | Action                                           |
+| :------------------------ | :----------------------------------------------- |
+| `npm install`             | Installs dependencies                            |
+| `npm run dev`             | Starts local dev server at `localhost:4321`      |
+| `npm run build`           | Build your production site to `./dist/`          |
+| `npm run preview`         | Preview your build locally, before deploying     |
+| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run astro -- --help` | Get help using the Astro CLI                     |
+
+## 👀 Want to learn more?
+
+Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+
+## Credit
+
+This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
