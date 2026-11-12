@@ -1,34 +1,94 @@
 /*
-  The CSS in this style tag is based off of Bear Blog's default CSS.
+  Based on Bear Blog's default CSS.
   https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
   License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
  */
 
+/* ---------- Theme tokens ---------- */
+
+/* Light theme (default) */
 :root {
-	--accent: #1a72ff;
-	--accent-dark: #000d8a;
-	--black: 0, 0, 0;
-	--white: 255, 255, 255;
-	--gray: 160, 170, 190;
-	--gray-dark: 235, 235, 235;
-	--gray-light: 205, 210, 220;
-	--gray-surface: 48, 48, 48;
-	--gray-gradient: rgba(var(--gray-surface), 50%), rgb(var(--black));
-	--box-shadow:
-		0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-		0 16px 32px rgba(var(--gray), 33%);
+	color-scheme: light;
+
+	--bg: #ffffff;
+	--surface: #f3f6fb;
+	--border: #dbe2ee;
+	--text: #2b3445;
+	--text-muted: #5d6a80;
+	--heading: #0f1729;
+
+	--grey: #6b778c;
+	--grey-light: #a3aebf;
+
+	--accent: #1a5fd6;
+	--accent-hover: #0f47a8;
+	--accent-soft: rgba(26, 95, 214, 0.1);
+
+	/* Fourier drawings: light blue */
+	--fourier: #4aa8f5;
+
+	--shadow: 0 1px 3px rgba(15, 23, 41, 0.08), 0 8px 24px rgba(15, 23, 41, 0.08);
 }
+
+/* Dark theme: follows the OS unless the user has explicitly picked light */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--bg: #0e131b;
+		--surface: #171e29;
+		--border: #2a3444;
+		--text: #d3dae6;
+		--text-muted: #8c98ad;
+		--heading: #f4f7fb;
+
+		--grey: #8c98ad;
+		--grey-light: #b8c1d0;
+
+		--accent: #4c9aff;
+		--accent-hover: #80b6ff;
+		--accent-soft: rgba(76, 154, 255, 0.14);
+
+		--fourier: #7cc4ff;
+
+		--shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.4);
+	}
+}
+
+/* Dark theme: explicit toggle (set data-theme="dark" on <html>) */
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--bg: #0e131b;
+	--surface: #171e29;
+	--border: #2a3444;
+	--text: #d3dae6;
+	--text-muted: #8c98ad;
+	--heading: #f4f7fb;
+
+	--grey: #8c98ad;
+	--grey-light: #b8c1d0;
+
+	--accent: #4c9aff;
+	--accent-hover: #80b6ff;
+	--accent-soft: rgba(76, 154, 255, 0.14);
+
+	--fourier: #7cc4ff;
+
+	--shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* ---------- Base ---------- */
 
 body {
 	font-family: var(--font-inter);
 	margin: 0;
 	padding: 0;
 	text-align: left;
-	background: rgb(var(--black));
-	background-size: 100% 600px;
+	background: var(--bg);
 	word-wrap: break-word;
 	overflow-wrap: break-word;
-	color: rgb(var(--gray-dark));
+	color: var(--text);
 	font-size: 20px;
 	line-height: 1.7;
 }
@@ -48,7 +108,7 @@ h5,
 h6 {
 	font-family: var(--font-space-grotesk);
 	margin: 0 0 0.5rem 0;
-	color: rgb(var(--white));
+	color: var(--heading);
 	line-height: 1.2;
 }
 
@@ -79,10 +139,19 @@ b {
 
 a {
 	color: var(--accent);
+	text-underline-offset: 0.15em;
 }
 
 a:hover {
-	color: var(--accent);
+	color: var(--accent-hover);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
 }
 
 p {
@@ -102,8 +171,28 @@ input {
 	font-size: 16px;
 }
 
+textarea,
+input {
+	background: var(--surface);
+	color: var(--text);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+}
+
 table {
 	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: 0.5em 0.75em;
+	border-bottom: 1px solid var(--border);
+	text-align: left;
+}
+
+th {
+	color: var(--heading);
 }
 
 img {
@@ -115,17 +204,24 @@ img {
 code {
 	font-family: var(--font-jetbrains-mono);
 	padding: 2px 5px;
-	background-color: rgb(var(--gray-surface));
-	border-radius: 2px;
+	background-color: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	font-size: 0.9em;
 }
 
 pre {
 	padding: 1.5em;
 	border-radius: 8px;
+	background-color: var(--surface);
+	border: 1px solid var(--border);
+	overflow-x: auto;
 }
 
 pre>code {
 	all: unset;
+	font-family: var(--font-jetbrains-mono);
+	font-size: 0.9em;
 }
 
 blockquote {
@@ -133,11 +229,26 @@ blockquote {
 	padding: 0 0 0 20px;
 	margin: 0;
 	font-size: 1.333em;
+	color: var(--text-muted);
 }
 
 hr {
 	border: none;
-	border-top: 1px solid rgb(var(--gray-surface));
+	border-top: 1px solid var(--border);
+}
+
+::selection {
+	background: var(--accent-soft);
+}
+
+/* ---------- Fourier drawings ---------- */
+/* Canvas: read the colour in JS with
+   getComputedStyle(document.documentElement).getPropertyValue('--fourier')
+   SVG: use stroke: var(--fourier) */
+.fourier path,
+.fourier line,
+.fourier circle {
+	stroke: var(--fourier);
 }
 
 @media (max-width: 720px) {

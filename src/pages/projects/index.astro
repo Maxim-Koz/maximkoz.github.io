@@ -7,111 +7,363 @@ import FormattedDate from "../../components/FormattedDate.astro";
 import Header from "../../components/Header.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
 
-const posts = (await getCollection("projects")).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
-);
+const newestFirst = (
+	a: { data: { pubDate: Date } },
+	b: { data: { pubDate: Date } },
+) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf();
+
+const allProjects = (await getCollection("projects")).sort(newestFirst);
+
+// pinned projects also stay in the timeline, in date order
+const pinned = allProjects.filter((project) => project.data.pinned);
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
 	</head>
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{posts.map((post) => (
-						<li>
-							<a href={`/projects/${post.id}/`}>
-								{post.data.heroImage && (
-									<Image
-										width={720}
-										height={360}
-										src={post.data.heroImage}
-										alt=""
-									/>
-								)}
-								<h4 class="title">{post.data.title}</h4>
-								<p class="date">
-									<FormattedDate date={post.data.pubDate} />
-								</p>
-							</a>
-						</li>
-					))}
-				</ul>
-			</section>
+			<h1>Projects</h1>
+			{pinned.length > 0 && (
+				<section aria-labelledby="pinned-heading">
+					<p class="section-label" id="pinned-heading">
+						Pinned
+					</p>
+					<ul class="pinned-grid">
+						{pinned.map((project) => (
+							<li>
+								<a
+									href={`/projects/${project.id}/`}
+									class="pinned-card"
+								>
+									<div class="meta">
+										<FormattedDate
+											date={project.data.pubDate}
+										/>
+									</div>
+									<h2 class="title">{project.data.title}</h2>
+									{project.data.heroImage && (
+										<Image
+											width={720}
+											height={360}
+											src={project.data.heroImage}
+											alt=""
+										/>
+									)}
+									<p class="description">
+										{project.data.description}
+									</p>
+								</a>
+							</li>
+						))}
+					</ul>
+					<p class="section-label timeline-label">Timeline</p>
+				</section>
+			)}
+			<ol class="timeline">
+				{allProjects.map((project) => (
+					<li class="project" data-project>
+						<span class="dot" aria-hidden="true" />
+						<a href={`/projects/${project.id}/`} class="card">
+							<div class="meta">
+								<FormattedDate date={project.data.pubDate} />
+							</div>
+							<h2 class="title">{project.data.title}</h2>
+							{project.data.heroImage && (
+								<Image
+									width={720}
+									height={360}
+									src={project.data.heroImage}
+									alt=""
+								/>
+							)}
+							<p class="description">
+								{project.data.description}
+							</p>
+						</a>
+					</li>
+				))}
+			</ol>
 		</main>
 		<Footer />
 	</body>
 </html>
+
+<style is:global>
+	/* gentle snapping between projects, delete if it feels sticky */
+	html {
+		scroll-snap-type: y proximity;
+	}
+</style>
+
+<style>
+	main {
+		width: 840px;
+	}
+
+	.timeline {
+		--line-x: 0.75rem;
+		list-style: none;
+		margin: 2rem 0 0;
+		padding: 0 0 0 3rem;
+		position: relative;
+	}
+	.timeline::before {
+		content: "";
+		position: absolute;
+		left: var(--line-x);
+		top: 0;
+		bottom: 0;
+		width: 2px;
+		background: var(--border);
+	}
+
+	.project {
+		/* set by the script, 0 to 1 as a project nears the middle of the screen */
+		--focus: 0;
+		position: relative;
+		min-height: 50vh;
+		display: flex;
+		align-items: center;
+		scroll-snap-align: center;
+	}
+
+	.dot {
+		position: absolute;
+		left: calc(var(--line-x) - 3rem - 6px);
+		top: 50%;
+		width: 14px;
+		height: 14px;
+		margin-top: -7px;
+		border-radius: 50%;
+		background: color-mix(
+			in srgb,
+			var(--accent) calc(var(--focus) * 100%),
+			var(--border)
+		);
+		box-shadow: 0 0 0 4px var(--bg);
+		transform: scale(calc(1 + 0.5 * var(--focus)));
+	}
+
+	.card {
+		display: block;
+		width: 100%;
+		box-sizing: border-box;
+		padding: 1.25rem 1.5rem;
+		background: var(--surface);
+		border: 1px solid
+			color-mix(
+				in srgb,
+				var(--accent) calc(var(--focus) * 100%),
+				var(--border)
+			);
+		border-radius: 12px;
+		text-decoration: none;
+		color: var(--text);
+		transform-origin: left center;
+		transform: scale(calc(0.88 + 0.12 * var(--focus)));
+		opacity: calc(0.35 + 0.65 * var(--focus));
+		will-change: transform, opacity;
+	}
+	.card:hover {
+		box-shadow: var(--shadow);
+	}
+	.title {
+		margin: 0.25rem 0 0.5rem;
+		font-size: 1.8em;
+		color: var(--heading);
+		transition: color 0.2s ease;
+	}
+	.card:hover .title {
+		color: var(--accent);
+	}
+	.card img {
+		width: 50%;
+		height: auto;
+		margin-bottom: 0.5rem;
+		filter: grayscale(calc(1 - var(--focus)));
+	}
+	.description {
+		margin: 0;
+		font-size: 0.85em;
+		color: var(--text-muted);
+	}
+
+	.meta {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		font-size: 0.7em;
+		color: var(--grey);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+
+	.section-label {
+		margin: 2rem 0 0.75rem;
+		font-size: 0.7em;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent);
+		font-weight: 700;
+	}
+	.timeline-label {
+		margin-top: 3rem;
+		color: var(--grey);
+	}
+	.pinned-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1.5rem;
+	}
+	.pinned-card {
+		display: block;
+		height: 100%;
+		box-sizing: border-box;
+		padding: 1.25rem 1.5rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		text-decoration: none;
+		color: var(--text);
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+	.pinned-card:hover {
+		border-color: var(--accent);
+		box-shadow: var(--shadow);
+	}
+	.pinned-card:hover .title {
+		color: var(--accent);
+	}
+	.pinned-card img {
+		width: 100%;
+		height: auto;
+		margin-bottom: 0.5rem;
+	}
+
+	@media (max-width: 720px) {
+		.pinned-grid {
+			grid-template-columns: 1fr;
+		}
+		.pinned-card {
+			padding: 1rem;
+		}
+		.timeline {
+			padding-left: 2.25rem;
+		}
+		.dot {
+			left: calc(var(--line-x) - 2.25rem - 6px);
+		}
+		.card {
+			padding: 1rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card,
+		.dot {
+			transform: none;
+		}
+		html {
+			scroll-snap-type: none;
+		}
+	}
+</style>
+
+<script>
+	const items = Array.from(
+		document.querySelectorAll<HTMLElement>("[data-project]"),
+	);
+	let queued = false;
+
+	function update() {
+		queued = false;
+		const mid = window.innerHeight / 2;
+		items.forEach((el, i) => {
+			const r = el.getBoundingClientRect();
+			let distance = Math.abs(r.top + r.height / 2 - mid);
+			// first and last stay highlighted at either end of the page
+			if (i === 0 && r.top + r.height / 2 > mid) distance = 0;
+			if (i === items.length - 1 && r.top + r.height / 2 < mid)
+				distance = 0;
+			const focus = Math.max(0, 1 - distance / r.height);
+			el.style.setProperty("--focus", focus.toFixed(3));
+		});
+	}
+
+	function queueUpdate() {
+		if (!queued) {
+			queued = true;
+			requestAnimationFrame(update);
+		}
+	}
+
+	window.addEventListener("scroll", queueUpdate, { passive: true });
+	window.addEventListener("resize", queueUpdate);
+	update();
+
+	// arrow keys jump between projects
+	let pending: number | null = null;
+	let pendingTimer: number | undefined;
+
+	function centreOf(el: HTMLElement) {
+		const r = el.getBoundingClientRect();
+		return r.top + r.height / 2;
+	}
+
+	function goTo(direction: 1 | -1): boolean {
+		const mid = window.innerHeight / 2;
+		const tolerance = 10;
+		let target = -1;
+
+		if (pending !== null) {
+			target = pending + direction;
+		} else if (direction === 1) {
+			target = items.findIndex((el) => centreOf(el) > mid + tolerance);
+		} else {
+			items.forEach((el, i) => {
+				if (centreOf(el) < mid - tolerance) target = i;
+			});
+		}
+
+		// nothing further that way, so let the page scroll as normal
+		if (target < 0 || target >= items.length) return false;
+
+		pending = target;
+		window.clearTimeout(pendingTimer);
+		pendingTimer = window.setTimeout(() => (pending = null), 700);
+
+		const reduceMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
+		items[target].scrollIntoView({
+			behavior: reduceMotion ? "auto" : "smooth",
+			block: "center",
+		});
+		return true;
+	}
+
+	window.addEventListener("keydown", (e) => {
+		if (
+			e.defaultPrevented ||
+			e.altKey ||
+			e.ctrlKey ||
+			e.metaKey ||
+			e.shiftKey
+		)
+			return;
+		if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+		const el = e.target as HTMLElement;
+		if (el.closest("input, textarea, select, [contenteditable]")) return;
+
+		if (goTo(e.key === "ArrowDown" ? 1 : -1)) e.preventDefault();
+	});
+</script>

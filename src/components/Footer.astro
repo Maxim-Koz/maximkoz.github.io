@@ -5,10 +5,11 @@ const today = new Date();
 <footer>
 	&copy; {today.getFullYear()} Maxim Kozlovskiy. All rights reserved.
 	<div class="social-links">
-		<a href="https://github.com/Maxim-Koz" target="_blank">
-			<span class="sr-only">Let's connect on Linkedin</span>
+		<a href="https://www.linkedin.com/in/maxim-kozlovskiy" target="_blank">
+			<span class="sr-only">Let's connect on LinkedIn</span>
 			<svg
 				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
 				width="32"
 				height="32"
 				class="bi bi-linkedin"
@@ -34,8 +35,9 @@ const today = new Date();
 <style>
 	footer {
 		padding: 2em 1em 6em 1em;
-		background: rgb(0, 0, 0);
-		color: rgb(var(--gray));
+		background: var(--bg);
+		border-top: 1px solid var(--border);
+		color: var(--grey);
 		text-align: center;
 	}
 	.social-links {
@@ -46,9 +48,11 @@ const today = new Date();
 	}
 	.social-links a {
 		text-decoration: none;
-		color: rgb(var(--gray));
+		color: var(--grey);
+		transition: color 0.2s ease;
 	}
-	.social-links a:hover {
-		color: rgb(var(--gray-light));
+	.social-links a:hover,
+	.social-links a:focus-visible {
+		color: var(--accent);
 	}
 </style>
