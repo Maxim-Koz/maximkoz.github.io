@@ -1,9 +1,29 @@
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+    </head>
     <body>
-        <canvas id="canvas" width="400" height="400"></canvas>
+        <canvas id="canvas"></canvas>
 
         <script>
             import "../scripts/fourier.ts";
         </script>
     </body>
 </html>
+
+<style is:global>
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+    }
+
+    #canvas {
+        display: block;
+        width: 100vw;
+        height: 100vh;
+    }
+</style>
