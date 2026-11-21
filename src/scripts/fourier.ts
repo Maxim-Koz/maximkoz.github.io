@@ -52,8 +52,11 @@ export type Complex = {
     imag: number;
 };
 
+
+
 //! The shape
-const points = Shapes.heart(80);
+const points = await Shapes.text("MK", 1000, 1000);
+
 
 
 function add(a: Complex, b: Complex): Complex {
@@ -136,10 +139,15 @@ function animate(noCircles: number, speed = 1) {
         const phase = 2 * Math.PI * vector.frequency * time + vector.phase;
         const nextTip = add(tip, fromPolar(vector.radius, phase));
 
+        drawingContext.beginPath();
+        drawingContext.arc(tip.real, tip.imag, vector.radius, 0, 2 * Math.PI);
+        drawingContext.strokeStyle = "rgba(0, 0, 0, 0.1)";
+        drawingContext.stroke();
 
         drawingContext.beginPath();
         drawingContext.moveTo(tip.real, tip.imag);
         drawingContext.lineTo(nextTip.real, nextTip.imag);
+        drawingContext.strokeStyle = "rgba(0, 0, 0, 0.5)";
         drawingContext.stroke();
 
         tip = nextTip;
@@ -160,6 +168,6 @@ function animate(noCircles: number, speed = 1) {
     requestAnimationFrame(() => animate(noCircles, speed));
 }
 
-requestAnimationFrame(() => animate(50, 0.2));
+requestAnimationFrame(() => animate(10000, 0.9));
 
 export { };
