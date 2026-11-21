@@ -1,3 +1,6 @@
+import * as Shapes from "./shapes";
+
+
 const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
 if (!canvas) throw new Error("Canvas not found");
 
@@ -44,10 +47,14 @@ function resizeCanvas() {
 
 window.addEventListener("resize", resizeCanvas);
 
-type Complex = {
+export type Complex = {
     real: number;
     imag: number;
 };
+
+//! The shape
+const points = Shapes.heart(80);
+
 
 function add(a: Complex, b: Complex): Complex {
     return { real: a.real + b.real, imag: a.imag + b.imag };
@@ -81,32 +88,6 @@ function divide(a: Complex, divisor: number): Complex {
     return { real: a.real / divisor, imag: a.imag / divisor };
 }
 
-// Temp shape: a square sampled evenly around its perimeter.
-const squareSize = 100;
-const halfSize = squareSize / 2;
-const pointsPerSide = 20;
-
-const points: Complex[] = [];
-
-for (let i = 0; i < pointsPerSide; i++) {
-    const progress = i / pointsPerSide;
-    points.push({ real: -halfSize + squareSize * progress, imag: -halfSize });
-}
-
-for (let i = 0; i < pointsPerSide; i++) {
-    const progress = i / pointsPerSide;
-    points.push({ real: halfSize, imag: -halfSize + squareSize * progress });
-}
-
-for (let i = 0; i < pointsPerSide; i++) {
-    const progress = i / pointsPerSide;
-    points.push({ real: halfSize - squareSize * progress, imag: halfSize });
-}
-
-for (let i = 0; i < pointsPerSide; i++) {
-    const progress = i / pointsPerSide;
-    points.push({ real: -halfSize, imag: halfSize - squareSize * progress });
-}
 
 const coefficients: Complex[] = [];
 
@@ -134,10 +115,11 @@ const signedVectors: RotatingVector[] = coefficients.map((coefficient, index) =>
 });
 
 const rotatingVectors: RotatingVector[] = signedVectors.sort(
-    (a, b) => Math.abs(a.frequency) - Math.abs(b.frequency),
+    (a, b) => b.radius - a.radius,
 );
 
 let time = 0;
+
 
 function animate(noCircles: number) {
     time += 1 / points.length;
@@ -178,6 +160,6 @@ function animate(noCircles: number) {
     requestAnimationFrame(() => animate(noCircles));
 }
 
-requestAnimationFrame(() => animate(30));
+requestAnimationFrame(() => animate(50));
 
 export { };
