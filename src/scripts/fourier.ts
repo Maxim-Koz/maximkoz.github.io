@@ -121,8 +121,8 @@ const rotatingVectors: RotatingVector[] = signedVectors.sort(
 let time = 0;
 
 
-function animate(noCircles: number) {
-    time += 1 / points.length;
+function animate(noCircles: number, speed = 1) {
+    time += speed / points.length;
     if (time >= 1) time = 0;
 
     let tip: Complex = { real: centerX, imag: centerY };
@@ -157,9 +157,9 @@ function animate(noCircles: number) {
 
     drawingContext.drawImage(trailCanvas, 0, 0);
 
-    requestAnimationFrame(() => animate(noCircles));
+    requestAnimationFrame(() => animate(noCircles, speed));
 }
 
-requestAnimationFrame(() => animate(50));
+requestAnimationFrame(() => animate(50, 0.2));
 
 export { };
