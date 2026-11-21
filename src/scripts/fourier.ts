@@ -1,6 +1,5 @@
 import * as Shapes from "./shapes";
 
-
 const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
 if (!canvas) throw new Error("Canvas not found");
 
@@ -25,6 +24,34 @@ let centerX = canvasWidth / 2;
 let centerY = canvasHeight / 2;
 let previousTipX: number | undefined;
 let previousTipY: number | undefined;
+let time = 0;
+
+
+let strokeColour = "#4aa8f5";
+
+function readColour() {
+    const value = getComputedStyle(document.documentElement)
+        .getPropertyValue("--fourier")
+        .trim();
+    if (value) strokeColour = value;
+
+    // Old trail is the wrong colour, so start it again
+    trailDrawingContext.clearRect(0, 0, canvasWidth, canvasHeight);
+    previousTipX = undefined;
+    previousTipY = undefined;
+    time = 0;
+}
+
+readColour();
+
+window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", readColour);
+
+new MutationObserver(readColour).observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+});
 
 const canvasElement = canvas;
 
@@ -55,7 +82,7 @@ export type Complex = {
 
 
 //! The shape
-const points = await Shapes.text("MK", 1000, 1000);
+const points = await Shapes.text("π", 400, Math.min(window.innerWidth, window.innerHeight) * 0.7);
 
 
 
@@ -121,7 +148,6 @@ const rotatingVectors: RotatingVector[] = signedVectors.sort(
     (a, b) => b.radius - a.radius,
 );
 
-let time = 0;
 
 
 function animate(noCircles: number, speed = 1) {
@@ -131,6 +157,7 @@ function animate(noCircles: number, speed = 1) {
     let tip: Complex = { real: centerX, imag: centerY };
 
     drawingContext.clearRect(0, 0, canvasWidth, canvasHeight);
+    drawingContext.strokeStyle = strokeColour;
 
     const circleCount = Math.min(noCircles, rotatingVectors.length);
 
@@ -139,21 +166,23 @@ function animate(noCircles: number, speed = 1) {
         const phase = 2 * Math.PI * vector.frequency * time + vector.phase;
         const nextTip = add(tip, fromPolar(vector.radius, phase));
 
+        drawingContext.globalAlpha = 0.12;
         drawingContext.beginPath();
         drawingContext.arc(tip.real, tip.imag, vector.radius, 0, 2 * Math.PI);
-        drawingContext.strokeStyle = "rgba(0, 0, 0, 0.1)";
         drawingContext.stroke();
 
+        drawingContext.globalAlpha = 0.4;
         drawingContext.beginPath();
         drawingContext.moveTo(tip.real, tip.imag);
         drawingContext.lineTo(nextTip.real, nextTip.imag);
-        drawingContext.strokeStyle = "rgba(0, 0, 0, 0.5)";
         drawingContext.stroke();
 
         tip = nextTip;
     }
 
     if (previousTipX !== undefined && previousTipY !== undefined) {
+        trailDrawingContext.strokeStyle = strokeColour;
+        trailDrawingContext.lineWidth = 2;
         trailDrawingContext.beginPath();
         trailDrawingContext.moveTo(previousTipX, previousTipY);
         trailDrawingContext.lineTo(tip.real, tip.imag);
@@ -163,11 +192,13 @@ function animate(noCircles: number, speed = 1) {
     previousTipX = tip.real;
     previousTipY = tip.imag;
 
+    drawingContext.globalAlpha = 0.9;
     drawingContext.drawImage(trailCanvas, 0, 0);
+    drawingContext.globalAlpha = 1;
 
     requestAnimationFrame(() => animate(noCircles, speed));
 }
 
-requestAnimationFrame(() => animate(10000, 0.9));
+requestAnimationFrame(() => animate(150, 0.9));
 
 export { };
