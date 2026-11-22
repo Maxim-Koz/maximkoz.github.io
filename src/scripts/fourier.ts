@@ -1,204 +1,209 @@
-import * as Shapes from "./shapes";
+import { type Complex, add, multiply, exp, divide } from "./complex";
 
-const canvas = document.querySelector<HTMLCanvasElement>("#canvas");
-if (!canvas) throw new Error("Canvas not found");
-
-const ctx = canvas.getContext("2d");
-if (!ctx) throw new Error("2D canvas context not available");
-
-const drawingContext: CanvasRenderingContext2D = ctx;
-let canvasWidth = window.innerWidth;
-let canvasHeight = window.innerHeight;
-
-canvas.width = canvasWidth;
-canvas.height = canvasHeight;
-
-const trailCanvas = document.createElement("canvas");
-trailCanvas.width = canvasWidth;
-trailCanvas.height = canvasHeight;
-const trailContext = trailCanvas.getContext("2d");
-if (!trailContext) throw new Error("2D trail context not available");
-const trailDrawingContext: CanvasRenderingContext2D = trailContext;
-
-let centerX = canvasWidth / 2;
-let centerY = canvasHeight / 2;
-let previousTipX: number | undefined;
-let previousTipY: number | undefined;
-let time = 0;
-
-
-let strokeColour = "#4aa8f5";
-
-function readColour() {
-    const value = getComputedStyle(document.documentElement)
-        .getPropertyValue("--fourier")
-        .trim();
-    if (value) strokeColour = value;
-
-    // Old trail is the wrong colour, so start it again
-    trailDrawingContext.clearRect(0, 0, canvasWidth, canvasHeight);
-    previousTipX = undefined;
-    previousTipY = undefined;
-    time = 0;
-}
-
-readColour();
-
-window
-    .matchMedia("(prefers-color-scheme: dark)")
-    .addEventListener("change", readColour);
-
-new MutationObserver(readColour).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["data-theme"],
-});
-
-const canvasElement = canvas;
-
-function resizeCanvas() {
-    canvasWidth = window.innerWidth;
-    canvasHeight = window.innerHeight;
-
-    canvasElement.width = canvasWidth;
-    canvasElement.height = canvasHeight;
-
-    trailCanvas.width = canvasWidth;
-    trailCanvas.height = canvasHeight;
-
-    centerX = canvasWidth / 2;
-    centerY = canvasHeight / 2;
-
-    previousTipX = undefined;
-    previousTipY = undefined;
-}
-
-window.addEventListener("resize", resizeCanvas);
-
-export type Complex = {
-    real: number;
-    imag: number;
+export type FourierOptions = {
+    circles?: number;
+    speed?: number;
+    sizeFraction?: number;
+    outlines?: number;
 };
 
+type Vector = { radius: number; frequency: number; phase: number };
 
+const BASE = 1000;
 
-//! The shape
-const points = await Shapes.text("π", 400, Math.min(window.innerWidth, window.innerHeight) * 0.7);
-
-
-
-function add(a: Complex, b: Complex): Complex {
-    return { real: a.real + b.real, imag: a.imag + b.imag };
+function normalise(points: Complex[]): Complex[] {
+    const xs = points.map((p) => p.real);
+    const ys = points.map((p) => p.imag);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const extent = Math.max(maxX - minX, maxY - minY) || 1;
+    const s = BASE / extent;
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    return points.map((p) => ({ real: (p.real - cx) * s, imag: (p.imag - cy) * s }));
 }
 
-function fromPolar(radius: number, phase: number): Complex {
-    return {
-        real: radius * Math.cos(phase),
-        imag: radius * Math.sin(phase),
-    };
+function computeVectors(points: Complex[]): Vector[] {
+    const n = points.length;
+    const vectors: Vector[] = [];
+
+    for (let k = 0; k < n; k++) {
+        let sum: Complex = { real: 0, imag: 0 };
+        for (let s = 0; s < n; s++) {
+            sum = add(sum, multiply(points[s], exp((-2 * Math.PI * k * s) / n)));
+        }
+        const c = divide(sum, n);
+        vectors.push({
+            radius: Math.hypot(c.real, c.imag),
+            frequency: k <= Math.floor(n / 2) ? k : k - n,
+            phase: Math.atan2(c.imag, c.real),
+        });
+    }
+    return vectors.sort((a, b) => b.radius - a.radius);
 }
 
-function multiply(a: Complex, b: Complex): Complex {
-    return {
-        real: a.real * b.real - a.imag * b.imag,
-        imag: a.real * b.imag + a.imag * b.real,
-    };
-}
+export function startFourier(
+    canvas: HTMLCanvasElement,
+    points: Complex[],
+    options: FourierOptions = {},
+): () => void {
+    const {
+        circles = 200,
+        speed = 0.9,
+        sizeFraction = 0.8,
+        outlines = 30,
+    } = options;
 
-type RotatingVector = {
-    radius: number;
-    frequency: number;
-    phase: number;
-};
+    if (points.length < 2) throw new Error("startFourier needs at least 2 points");
 
-function exp(angel: number): Complex {
-    return { real: Math.cos(angel), imag: Math.sin(angel) };
-}
+    const ctx = canvas.getContext("2d")!;
+    const trail = document.createElement("canvas");
+    const trailCtx = trail.getContext("2d")!;
 
-function divide(a: Complex, divisor: number): Complex {
-    return { real: a.real / divisor, imag: a.imag / divisor };
-}
+    const vectors = computeVectors(normalise(points));
+    const count = Math.min(circles, vectors.length);
+    const steps = points.length;
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const coefficients: Complex[] = [];
+    let w = 0, h = 0, scale = 1;
+    let time = 0;
+    let prev: { x: number; y: number } | null = null;
+    let colour = "#4aa8f5";
+    let raf = 0;
 
-for (let frequency = 0; frequency < points.length; frequency++) {
-    let coefficient: Complex = { real: 0, imag: 0 };
-
-    for (let sample = 0; sample < points.length; sample++) {
-        const phase = (-2 * Math.PI * frequency * sample) / points.length;
-        coefficient = add(coefficient, multiply(points[sample], exp(phase)));
+    function resetTrail() {
+        trailCtx.clearRect(0, 0, w, h);
+        prev = null;
+        time = 0;
     }
 
-    coefficients.push(divide(coefficient, points.length));
-}
+    function resize() {
+        const rect = canvas.getBoundingClientRect();
 
-const signedVectors: RotatingVector[] = coefficients.map((coefficient, index) => {
-    const frequency = index <= Math.floor(points.length / 2)
-        ? index
-        : index - points.length;
+        // Ignore non-changes (e.g. a phone's address bar showing/hiding), so the drawing doesn't restart
+        if (Math.abs(rect.width - w) < 1 && Math.abs(rect.height - h) < 1) return;
 
-    return {
-        radius: Math.sqrt(coefficient.real * coefficient.real + coefficient.imag * coefficient.imag),
-        frequency,
-        phase: Math.atan2(coefficient.imag, coefficient.real),
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = rect.width;
+        h = rect.height;
+        for (const c of [canvas, trail]) {
+            c.width = Math.round(w * dpr);
+            c.height = Math.round(h * dpr);
+        }
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        trailCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        scale = (Math.min(w, h) * sizeFraction) / BASE;
+        resetTrail();
+        if (reduceMotion) drawStatic();
+    }
+
+    function readColour() {
+        const value = getComputedStyle(document.documentElement)
+            .getPropertyValue("--fourier")
+            .trim();
+        if (value) colour = value;
+        resetTrail();
+        if (reduceMotion) drawStatic();
+    }
+
+    function tipAt(t: number, drawArms: boolean) {
+        let x = w / 2;
+        let y = h / 2;
+
+        for (let i = 0; i < count; i++) {
+            const v = vectors[i];
+            const r = v.radius * scale;
+            const angle = 2 * Math.PI * v.frequency * t + v.phase;
+            const nx = x + r * Math.cos(angle);
+            const ny = y + r * Math.sin(angle);
+
+            if (drawArms) {
+                if (i < outlines) {
+                    ctx.globalAlpha = 0.12;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 0.4;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(nx, ny);
+                ctx.stroke();
+            }
+            x = nx;
+            y = ny;
+        }
+        return { x, y };
+    }
+
+    function extendTrail(tip: { x: number; y: number }) {
+        if (prev) {
+            trailCtx.strokeStyle = colour;
+            trailCtx.lineWidth = 2;
+            trailCtx.beginPath();
+            trailCtx.moveTo(prev.x, prev.y);
+            trailCtx.lineTo(tip.x, tip.y);
+            trailCtx.stroke();
+        }
+        prev = tip;
+    }
+
+    function showTrail() {
+        ctx.globalAlpha = 0.9;
+        ctx.drawImage(trail, 0, 0, w, h);
+        ctx.globalAlpha = 1;
+    }
+
+    function frame() {
+        time += speed / steps;
+        if (time >= 1) time = 0;
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = colour;
+        extendTrail(tipAt(time, true));
+        showTrail();
+    }
+
+    function drawStatic() {
+        resetTrail();
+        for (let i = 0; i <= steps * 2; i++) extendTrail(tipAt(i / (steps * 2), false));
+        ctx.clearRect(0, 0, w, h);
+        showTrail();
+    }
+
+    function loop() {
+        frame();
+        raf = requestAnimationFrame(loop);
+    }
+    const play = () => { if (!raf && !reduceMotion) loop(); };
+    const pause = () => { cancelAnimationFrame(raf); raf = 0; };
+
+    resize();
+    readColour();
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(canvas);
+
+    const themeQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    themeQuery.addEventListener("change", readColour);
+    const themeObserver = new MutationObserver(readColour);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["data-theme"],
+    });
+
+    // Pause when scrolled out of view; resumes where it left off
+    const visibility = new IntersectionObserver(([entry]) => {
+        entry.isIntersecting ? play() : pause();
+    });
+    visibility.observe(canvas);
+
+    return () => {
+        pause();
+        resizeObserver.disconnect();
+        themeObserver.disconnect();
+        visibility.disconnect();
+        themeQuery.removeEventListener("change", readColour);
     };
-});
-
-const rotatingVectors: RotatingVector[] = signedVectors.sort(
-    (a, b) => b.radius - a.radius,
-);
-
-
-
-function animate(noCircles: number, speed = 1) {
-    time += speed / points.length;
-    if (time >= 1) time = 0;
-
-    let tip: Complex = { real: centerX, imag: centerY };
-
-    drawingContext.clearRect(0, 0, canvasWidth, canvasHeight);
-    drawingContext.strokeStyle = strokeColour;
-
-    const circleCount = Math.min(noCircles, rotatingVectors.length);
-
-    for (let i = 0; i < circleCount; i++) {
-        const vector = rotatingVectors[i];
-        const phase = 2 * Math.PI * vector.frequency * time + vector.phase;
-        const nextTip = add(tip, fromPolar(vector.radius, phase));
-
-        drawingContext.globalAlpha = 0.12;
-        drawingContext.beginPath();
-        drawingContext.arc(tip.real, tip.imag, vector.radius, 0, 2 * Math.PI);
-        drawingContext.stroke();
-
-        drawingContext.globalAlpha = 0.4;
-        drawingContext.beginPath();
-        drawingContext.moveTo(tip.real, tip.imag);
-        drawingContext.lineTo(nextTip.real, nextTip.imag);
-        drawingContext.stroke();
-
-        tip = nextTip;
-    }
-
-    if (previousTipX !== undefined && previousTipY !== undefined) {
-        trailDrawingContext.strokeStyle = strokeColour;
-        trailDrawingContext.lineWidth = 2;
-        trailDrawingContext.beginPath();
-        trailDrawingContext.moveTo(previousTipX, previousTipY);
-        trailDrawingContext.lineTo(tip.real, tip.imag);
-        trailDrawingContext.stroke();
-    }
-
-    previousTipX = tip.real;
-    previousTipY = tip.imag;
-
-    drawingContext.globalAlpha = 0.9;
-    drawingContext.drawImage(trailCanvas, 0, 0);
-    drawingContext.globalAlpha = 1;
-
-    requestAnimationFrame(() => animate(noCircles, speed));
 }
-
-requestAnimationFrame(() => animate(150, 0.9));
-
-export { };

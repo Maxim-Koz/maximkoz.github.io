@@ -1,5 +1,5 @@
 import opentype from "opentype.js";
-import type { Complex } from "../fourier";
+import type { Complex } from "../complex";
 import { pathToPoints } from "./fromPath";
 
 const DEFAULT_FONT = "fonts/latinmodern-math-1959/latinmodern-math.otf";

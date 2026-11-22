@@ -1,4 +1,4 @@
-import type { Complex } from "../fourier";
+import type { Complex } from "../complex";
 
 export function heart(n = 100, scale = 10): Complex[] {
     return Array.from({ length: n }, (_, i) => {

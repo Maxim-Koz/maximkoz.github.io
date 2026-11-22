@@ -1,4 +1,4 @@
-import type { Complex } from "../fourier";
+import type { Complex } from "../complex";
 
 export function pathToPoints(d: string, n: number, size = 250): Complex[] {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import FourierCanvas from "../components/FourierCanvas.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 ---
 
@@ -8,6 +9,9 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 	description={SITE_DESCRIPTION}
 	background={false}
 >
+	<div style="max-width: 420px; margin: 2rem auto;">
+		<FourierCanvas shape="pi" circles={150} />
+	</div>
 	<h1>Hello, I'm Maxim</h1>
 	<p>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod

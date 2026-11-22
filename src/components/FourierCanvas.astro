@@ -1,0 +1,45 @@
+---
+interface Props {
+    shape: string;
+    points?: number;
+    circles?: number;
+    speed?: number;
+}
+const { shape, points = 400, circles = 200, speed = 0.9 } = Astro.props;
+---
+
+<canvas
+    data-fourier
+    data-shape={shape}
+    data-points={points}
+    data-circles={circles}
+    data-speed={speed}
+></canvas>
+
+<style>
+    canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1;
+    }
+</style>
+
+<script>
+    import { startFourier } from "../scripts/fourier";
+    import { presets } from "../scripts/shapes";
+
+    document
+        .querySelectorAll<HTMLCanvasElement>("canvas[data-fourier]")
+        .forEach(async (c) => {
+            const make = presets[c.dataset.shape ?? ""];
+            if (!make) {
+                console.error(`Unknown shape "${c.dataset.shape}"`);
+                return;
+            }
+            const points = await make(Number(c.dataset.points));
+            startFourier(c, points, {
+                circles: Number(c.dataset.circles),
+                speed: Number(c.dataset.speed),
+            });
+        });
+</script>

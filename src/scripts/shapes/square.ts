@@ -1,4 +1,4 @@
-import type { Complex } from "../fourier";
+import type { Complex } from "../complex";
 
 export function square(n = 100, scale = 10): Complex[] {
     const shapeScale = 2.5;

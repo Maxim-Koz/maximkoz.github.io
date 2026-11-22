@@ -1,16 +1,24 @@
-<canvas id="canvas"></canvas>
+---
+import FourierCanvas from "./FourierCanvas.astro";
+---
+
+<div class="bg">
+    <FourierCanvas shape="pi" circles={150} />
+</div>
 
 <style>
-    canvas {
+    .bg {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
         width: 100%;
-        height: 100%;
+        height: 100%; /* fallback */
+        height: 100lvh; /* ignores the mobile address bar, so no resize while scrolling */
         z-index: -1;
         pointer-events: none;
     }
+    .bg :global(canvas) {
+        height: 100%;
+        aspect-ratio: auto;
+    }
 </style>
-
-<script>
-    import "../scripts/fourier";
-</script>
