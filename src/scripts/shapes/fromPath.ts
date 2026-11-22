@@ -24,3 +24,16 @@ export function pathToPoints(d: string, n: number, size = 250): Complex[] {
         imag: (p.imag - cy) * scale,
     }));
 }
+
+export function samplePath(d: string, density: number, minPoints = 60): Complex[] {
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", d);
+    const length = path.getTotalLength();
+    if (length < 1) return [];
+
+    const n = Math.max(minPoints, Math.round(length * density));
+    return Array.from({ length: n }, (_, i) => {
+        const p = path.getPointAtLength((i / n) * length);
+        return { real: p.x, imag: p.y };
+    });
+}

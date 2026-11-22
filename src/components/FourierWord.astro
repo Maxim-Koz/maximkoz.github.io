@@ -1,0 +1,60 @@
+---
+interface Props {
+    text: string;
+    circles?: number;
+    secondsPerContour?: number;
+    loop?: boolean;
+    density?: number;
+}
+const {
+    text,
+    circles = 150,
+    secondsPerContour = 3,
+    loop = false,
+    density = 0.5,
+} = Astro.props;
+---
+
+<canvas
+    data-fourier-word
+    data-text={text}
+    data-circles={circles}
+    data-seconds={secondsPerContour}
+    data-loop={loop ? "1" : "0"}
+    data-density={density}
+    aria-label={text}
+    role="img"
+></canvas>
+
+<style>
+    canvas {
+        display: block;
+        width: 100%;
+    }
+</style>
+
+<script>
+    import {
+        startFourierSequence,
+        getBounds,
+    } from "../scripts/fourierSequence";
+    import { wordContours } from "../scripts/shapes/word";
+
+    document
+        .querySelectorAll<HTMLCanvasElement>("canvas[data-fourier-word]")
+        .forEach(async (c) => {
+            const contours = await wordContours(
+                c.dataset.text!,
+                Number(c.dataset.density),
+            );
+            const b = getBounds(contours);
+
+            c.style.aspectRatio = `${b.width} / ${b.height * 1.4}`;
+
+            startFourierSequence(c, contours, {
+                circles: Number(c.dataset.circles),
+                seconds: Number(c.dataset.seconds),
+                loop: c.dataset.loop === "1",
+            });
+        });
+</script>

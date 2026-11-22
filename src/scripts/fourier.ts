@@ -1,4 +1,5 @@
 import { type Complex, add, multiply, exp, divide } from "./complex";
+import { computeVectors } from "./dft";
 
 export type FourierOptions = {
     circles?: number;
@@ -6,8 +7,6 @@ export type FourierOptions = {
     sizeFraction?: number;
     outlines?: number;
 };
-
-type Vector = { radius: number; frequency: number; phase: number };
 
 const BASE = 1000;
 
@@ -21,25 +20,6 @@ function normalise(points: Complex[]): Complex[] {
     const cx = (minX + maxX) / 2;
     const cy = (minY + maxY) / 2;
     return points.map((p) => ({ real: (p.real - cx) * s, imag: (p.imag - cy) * s }));
-}
-
-function computeVectors(points: Complex[]): Vector[] {
-    const n = points.length;
-    const vectors: Vector[] = [];
-
-    for (let k = 0; k < n; k++) {
-        let sum: Complex = { real: 0, imag: 0 };
-        for (let s = 0; s < n; s++) {
-            sum = add(sum, multiply(points[s], exp((-2 * Math.PI * k * s) / n)));
-        }
-        const c = divide(sum, n);
-        vectors.push({
-            radius: Math.hypot(c.real, c.imag),
-            frequency: k <= Math.floor(n / 2) ? k : k - n,
-            phase: Math.atan2(c.imag, c.real),
-        });
-    }
-    return vectors.sort((a, b) => b.radius - a.radius);
 }
 
 export function startFourier(

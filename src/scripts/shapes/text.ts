@@ -2,11 +2,11 @@ import opentype from "opentype.js";
 import type { Complex } from "../complex";
 import { pathToPoints } from "./fromPath";
 
-const DEFAULT_FONT = "fonts/latinmodern-math-1959/latinmodern-math.otf";
+export const DEFAULT_FONT = "fonts/latinmodern-math-1959/latinmodern-math.otf";
 
 const fonts = new Map<string, Promise<opentype.Font>>();
 
-function loadFont(url: string) {
+export function loadFont(url: string) {
     if (!fonts.has(url)) {
         fonts.set(
             url,

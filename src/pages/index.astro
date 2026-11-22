@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import FourierCanvas from "../components/FourierCanvas.astro";
+import FourierWord from "../components/FourierWord.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 ---
 
@@ -9,8 +9,8 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 	description={SITE_DESCRIPTION}
 	background={false}
 >
-	<div style="max-width: 420px; margin: 2rem auto;">
-		<FourierCanvas shape="pi" circles={150} />
+	<div style="width: min(100vw - 2rem, 600px); margin-left: 50%; transform: translateX(-50%);">
+		<FourierWord text="Hello" />
 	</div>
 	<h1>Hello, I'm Maxim</h1>
 	<p>
