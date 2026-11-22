@@ -1,11 +1,8 @@
 ---
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
-import BaseHead from "../../components/BaseHead.astro";
-import Footer from "../../components/Footer.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
-import Header from "../../components/Header.astro";
-import { SITE_DESCRIPTION, SITE_TITLE } from "../../consts";
 
 const newestFirst = (
 	a: { data: { pubDate: Date } },
@@ -14,60 +11,23 @@ const newestFirst = (
 
 const allProjects = (await getCollection("projects")).sort(newestFirst);
 
-// pinned projects also stay in the timeline, in date order
 const pinned = allProjects.filter((project) => project.data.pinned);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>Projects</h1>
-			{pinned.length > 0 && (
-				<section aria-labelledby="pinned-heading">
-					<p class="section-label" id="pinned-heading">
-						Pinned
-					</p>
-					<ul class="pinned-grid">
-						{pinned.map((project) => (
-							<li>
-								<a
-									href={`/projects/${project.id}/`}
-									class="pinned-card"
-								>
-									<div class="meta">
-										<FormattedDate
-											date={project.data.pubDate}
-										/>
-									</div>
-									<h2 class="title">{project.data.title}</h2>
-									{project.data.heroImage && (
-										<Image
-											width={720}
-											height={360}
-											src={project.data.heroImage}
-											alt=""
-										/>
-									)}
-									<p class="description">
-										{project.data.description}
-									</p>
-								</a>
-							</li>
-						))}
-					</ul>
-					<p class="section-label timeline-label">Timeline</p>
-				</section>
-			)}
-			<ol class="timeline">
-				{allProjects.map((project) => (
-					<li class="project" data-project>
-						<span class="dot" aria-hidden="true" />
-						<a href={`/projects/${project.id}/`} class="card">
+<BaseLayout title="Projects" description="A collection of my projects.">
+	<h1>Projects</h1>
+	{pinned.length > 0 && (
+		<section aria-labelledby="pinned-heading">
+			<p class="section-label" id="pinned-heading">
+				Pinned
+			</p>
+			<ul class="pinned-grid">
+				{pinned.map((project) => (
+					<li>
+						<a
+							href={`/projects/${project.id}/`}
+							class="pinned-card"
+						>
 							<div class="meta">
 								<FormattedDate date={project.data.pubDate} />
 							</div>
@@ -86,14 +46,35 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 						</a>
 					</li>
 				))}
-			</ol>
-		</main>
-		<Footer />
-	</body>
-</html>
+			</ul>
+			<p class="section-label timeline-label">Timeline</p>
+		</section>
+	)}
+	<ol class="timeline">
+		{allProjects.map((project) => (
+			<li class="project" data-project>
+				<span class="dot" aria-hidden="true" />
+				<a href={`/projects/${project.id}/`} class="card">
+					<div class="meta">
+						<FormattedDate date={project.data.pubDate} />
+					</div>
+					<h2 class="title">{project.data.title}</h2>
+					{project.data.heroImage && (
+						<Image
+							width={720}
+							height={360}
+							src={project.data.heroImage}
+							alt=""
+						/>
+					)}
+					<p class="description">{project.data.description}</p>
+				</a>
+			</li>
+		))}
+	</ol>
+</BaseLayout>
 
 <style is:global>
-	/* gentle snapping between projects, delete if it feels sticky */
 	html {
 		scroll-snap-type: y proximity;
 	}
@@ -122,7 +103,6 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	}
 
 	.project {
-		/* set by the script, 0 to 1 as a project nears the middle of the screen */
 		--focus: 0;
 		position: relative;
 		min-height: 50vh;
@@ -334,7 +314,6 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 			});
 		}
 
-		// nothing further that way, so let the page scroll as normal
 		if (target < 0 || target >= items.length) return false;
 
 		pending = target;

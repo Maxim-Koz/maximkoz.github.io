@@ -8,9 +8,14 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 interface Props {
     title?: string;
     description?: string;
+    background?: boolean;
 }
 
-const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
+const {
+    title = SITE_TITLE,
+    description = SITE_DESCRIPTION,
+    background = true,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -19,7 +24,7 @@ const { title = SITE_TITLE, description = SITE_DESCRIPTION } = Astro.props;
         <BaseHead title={title} description={description} />
     </head>
     <body>
-        <FourierBackground />
+        {background && <FourierBackground />}
         <Header />
         <main>
             <slot />
