@@ -10,7 +10,6 @@ export function pathToPoints(d: string, n: number, size = 250): Complex[] {
         return { real: p.x, imag: p.y };
     });
 
-    // Centre on the bounding box and scale so the longest side equals `size`
     const xs = raw.map((p) => p.real);
     const ys = raw.map((p) => p.imag);
     const minX = Math.min(...xs), maxX = Math.max(...xs);

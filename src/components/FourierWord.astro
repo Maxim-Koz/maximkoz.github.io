@@ -1,23 +1,32 @@
 ---
+import { fonts, type FontName } from "../scripts/fonts";
+
 interface Props {
     text: string;
+    font?: FontName;
     circles?: number;
     secondsPerContour?: number;
     loop?: boolean;
     density?: number;
+    fade?: boolean;
+    fadeSeconds?: number;
 }
 const {
     text,
+    font = "grotesk",
     circles = 150,
     secondsPerContour = 3,
     loop = false,
     density = 0.5,
 } = Astro.props;
+
+const fontUrl = fonts[font];
 ---
 
 <canvas
     data-fourier-word
     data-text={text}
+    data-font={fontUrl}
     data-circles={circles}
     data-seconds={secondsPerContour}
     data-loop={loop ? "1" : "0"}
@@ -46,6 +55,7 @@ const {
             const contours = await wordContours(
                 c.dataset.text!,
                 Number(c.dataset.density),
+                c.dataset.font,
             );
             const b = getBounds(contours);
 

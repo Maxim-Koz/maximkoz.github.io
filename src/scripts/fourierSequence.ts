@@ -1,4 +1,3 @@
-// src/scripts/fourierSequence.ts
 import type { Complex } from "./complex";
 import { computeVectors, type Vector } from "./dft";
 

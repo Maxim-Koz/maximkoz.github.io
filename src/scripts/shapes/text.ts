@@ -1,19 +1,20 @@
 import opentype from "opentype.js";
 import type { Complex } from "../complex";
 import { pathToPoints } from "./fromPath";
+import { fonts } from "../fonts";
 
-export const DEFAULT_FONT = "fonts/latinmodern-math-1959/latinmodern-math.otf";
+export const DEFAULT_FONT = fonts.grotesk;
 
-const fonts = new Map<string, Promise<opentype.Font>>();
+const cache = new Map<string, Promise<opentype.Font>>();
 
 export function loadFont(url: string) {
-    if (!fonts.has(url)) {
-        fonts.set(
+    if (!cache.has(url)) {
+        cache.set(
             url,
             fetch(url).then((r) => r.arrayBuffer()).then((buf) => opentype.parse(buf)),
         );
     }
-    return fonts.get(url)!;
+    return cache.get(url)!;
 }
 
 export async function text(

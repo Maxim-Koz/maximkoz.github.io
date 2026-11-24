@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import { getCollection } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import FourierWord from "../../components/FourierWord.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
 
 const newestFirst = (
@@ -14,8 +15,14 @@ const allProjects = (await getCollection("projects")).sort(newestFirst);
 const pinned = allProjects.filter((project) => project.data.pinned);
 ---
 
-<BaseLayout title="Projects" description="A collection of my projects.">
-	<h1>Projects</h1>
+<BaseLayout
+	title="Projects"
+	description="A collection of my projects."
+	background={false}
+>
+	<div style="width: min(100vw - 2rem, 600px); margin-left: 50%; transform: translateX(-50%);">
+		<FourierWord text="Projects" font="grotesk" />
+	</div>
 	{pinned.length > 0 && (
 		<section aria-labelledby="pinned-heading">
 			<p class="section-label" id="pinned-heading">
