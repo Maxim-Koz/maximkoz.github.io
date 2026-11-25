@@ -1,8 +1,8 @@
 ---
-title: 'First post'
+title: 'Least Action'
 description: 'Lorem ipsum dolor sit amet'
 pubDate: 'Jul 08 2022'
-heroImage: '../../assets/project-placeholder-3.jpg'
+heroImage: '../../assets/all-paths.jpg'
 pinned: false
 ---
 

@@ -21,7 +21,7 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	background={false}
 >
 	<div style="width: min(100vw - 2rem, 600px); margin-left: 50%; transform: translateX(-50%);">
-		<FourierWord text="Projects" font="grotesk" />
+		<FourierWord text="Projects" font="grotesk" fade={true} />
 	</div>
 	{pinned.length > 0 && (
 		<section aria-labelledby="pinned-heading">
