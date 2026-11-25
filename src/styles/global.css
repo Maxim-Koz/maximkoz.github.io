@@ -35,8 +35,8 @@
 	:root:not([data-theme="light"]) {
 		color-scheme: dark;
 
-		--bg: #0e131b;
-		--surface: #171e29;
+		--bg: #000000;
+		--surface: #000000;
 		--border: #2a3444;
 		--text: #d3dae6;
 		--text-muted: #8c98ad;
@@ -59,8 +59,8 @@
 :root[data-theme="dark"] {
 	color-scheme: dark;
 
-	--bg: #0e131b;
-	--surface: #171e29;
+	--bg: #000000;
+	--surface: #000000;
 	--border: #2a3444;
 	--text: #d3dae6;
 	--text-muted: #8c98ad;

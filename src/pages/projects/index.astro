@@ -39,14 +39,21 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 								<FormattedDate date={project.data.pubDate} />
 							</div>
 							<h2 class="title">{project.data.title}</h2>
-							{project.data.heroImage && (
-								<Image
-									width={720}
-									height={360}
-									src={project.data.heroImage}
-									alt=""
-								/>
-							)}
+							<div class="thumb">
+								{project.data.heroImage ? (
+									<Image
+										width={720}
+										height={360}
+										src={project.data.heroImage}
+										alt=""
+									/>
+								) : (
+									<span
+										class="thumb-empty"
+										aria-hidden="true"
+									/>
+								)}
+							</div>
 							<p class="description">
 								{project.data.description}
 							</p>
@@ -66,14 +73,18 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 						<FormattedDate date={project.data.pubDate} />
 					</div>
 					<h2 class="title">{project.data.title}</h2>
-					{project.data.heroImage && (
-						<Image
-							width={720}
-							height={360}
-							src={project.data.heroImage}
-							alt=""
-						/>
-					)}
+					<div class="thumb">
+						{project.data.heroImage ? (
+							<Image
+								width={720}
+								height={360}
+								src={project.data.heroImage}
+								alt=""
+							/>
+						) : (
+							<span class="thumb-sempty" aria-hidden="true" />
+						)}
+					</div>
 					<p class="description">{project.data.description}</p>
 				</a>
 			</li>
@@ -167,11 +178,33 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	.card:hover .title {
 		color: var(--accent);
 	}
-	.card img {
+	.thumb {
+		aspect-ratio: 2 / 1;
 		width: 50%;
-		height: auto;
 		margin-bottom: 0.5rem;
+		border-radius: 8px;
+		overflow: hidden;
+		background: var(--border);
+	}
+
+	.pinned-card .thumb {
+		width: 100%;
+	}
+	.thumb img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		margin: 0;
+		border-radius: 0;
+	}
+	.card .thumb img {
 		filter: grayscale(calc(1 - var(--focus)));
+	}
+	.thumb-empty {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 	.description {
 		margin: 0;
@@ -229,11 +262,6 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	}
 	.pinned-card:hover .title {
 		color: var(--accent);
-	}
-	.pinned-card img {
-		width: 100%;
-		height: auto;
-		margin-bottom: 0.5rem;
 	}
 
 	@media (max-width: 720px) {
