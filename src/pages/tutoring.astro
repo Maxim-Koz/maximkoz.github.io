@@ -1,11 +1,368 @@
 ---
-import AboutHeroImage from "../assets/project-placeholder-about.jpg";
-import Layout from "../layouts/PostLayout.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const EMAIL = "maxim.kozlovskiy.contact@gmail.com";
+const LINKEDIN = "https://www.linkedin.com/in/maxim-kozlovskiy";
+
+const RATE = "";
+
+const subjects = [
+	{
+		title: "GCSE Maths",
+		text: "Foundation and Higher tier, from solid fundamentals to exam technique.",
+	},
+	{
+		title: "A-level Maths",
+		text: "Pure, Statistics and Mechanics, with plenty of exam-style practice.",
+	},
+	{
+		title: "A-level Further Maths",
+		text: "Further Pure and the applied options, for students aiming high.",
+	},
+];
+
+const qualifications = [
+	{ label: "University", value: "Mathematics, University of Warwick" },
+	{
+		label: "A-level",
+		value: "A*A*A*A\u2002·\u2002A* Maths\u2002·\u2002A* Further Maths",
+	},
+	{ label: "GCSE", value: "9 Maths\u2002·\u20029 Further Maths" },
+];
+
+const steps = [
+	{
+		title: "Get in touch",
+		text: "Tell me the level, the exam board and what you'd like to improve.",
+	},
+	{
+		title: "Plan together",
+		text: "We agree what to work on first, so sessions are focused from the start.",
+	},
+	{
+		title: "Learn and practise",
+		text: "Regular sessions with worked examples and honest feedback.",
+	},
+];
 ---
 
-<Layout
-	title="About Me"
-	description="Lorem ipsum dolor sit amet"
-	pubDate={new Date("August 08 2021")}
-	heroImage={AboutHeroImage}
-/>
+<BaseLayout
+	title="Tutoring"
+	description="One-to-one GCSE and A-level Maths and Further Maths tutoring from a University of Warwick Mathematics student."
+	background={false}
+>
+	<!-- ============ Hero ============ -->
+	<section class="hero">
+		<p class="eyebrow">One-to-one tutoring</p>
+		<h1>
+			Maths tutoring<span class="dot">.</span>
+		</h1>
+		<p class="lead">
+			GCSE and A-level Maths and Further Maths, from a Mathematics student
+			at the University of Warwick.
+		</p>
+		<div class="actions">
+			<a class="btn btn-primary" href="#enquire">
+				Enquire about tutoring
+			</a>
+			<a class="btn btn-secondary" href="#how">
+				How it works
+			</a>
+		</div>
+	</section>
+
+	<!-- ============ What I teach ============ -->
+	<section class="section">
+		<p class="eyebrow">Subjects</p>
+		<h2>What I teach</h2>
+		<ul class="rows">
+			{subjects.map((s) => (
+				<li class="row row-large">
+					<h3>{s.title}</h3>
+					<p>{s.text}</p>
+				</li>
+			))}
+		</ul>
+	</section>
+
+	<!-- ============ About me and qualifications ============ -->
+	<section class="section">
+		<p class="eyebrow">About me</p>
+		<h2>Taught by someone who sat these exams recently</h2>
+		<p class="about">
+			I'm studying Mathematics at the University of Warwick. I focus on
+			understanding why a method works, not just how to apply it, because
+			that's what holds up when a question looks unfamiliar.
+		</p>
+		<dl class="rows qualifications">
+			{qualifications.map((q) => (
+				<div class="row">
+					<dt>{q.label}</dt>
+					<dd>{q.value}</dd>
+				</div>
+			))}
+		</dl>
+	</section>
+
+	<!-- ============ How it works ============ -->
+	<section class="section" id="how">
+		<p class="eyebrow">Process</p>
+		<h2>How it works</h2>
+		<ol class="steps">
+			{steps.map((s, i) => (
+				<li class="step">
+					<span class="num" aria-hidden="true">
+						{i + 1}
+					</span>
+					<h3>{s.title}</h3>
+					<p>{s.text}</p>
+				</li>
+			))}
+		</ol>
+	</section>
+
+	<!-- ============ Enquire ============ -->
+	<section class="section enquire" id="enquire">
+		<h2>Enquire about tutoring</h2>
+		<p>
+			Email me the student's year, the subject and the exam board, and
+			I'll reply with my availability.
+		</p>
+		<p class="rate">
+			{RATE ? (
+				<>
+					Rate: <strong>{RATE}</strong>
+				</>
+			) : (
+				"Email me for current rates."
+			)}
+		</p>
+		<div class="actions">
+			<a
+				class="btn btn-primary"
+				href={`mailto:${EMAIL}?subject=Maths%20Tutoring%20Enquiry`}
+			>
+				{EMAIL}
+			</a>
+			<a
+				class="btn btn-secondary"
+				href={LINKEDIN}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				LinkedIn
+			</a>
+		</div>
+	</section>
+</BaseLayout>
+
+<style>
+	.dot {
+		color: var(--fourier);
+	}
+	.eyebrow {
+		margin: 0 0 0.75rem;
+		font-size: 0.8em;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	/* ---------- Hero ---------- */
+	.hero {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		min-height: 55vh;
+		padding: 2rem 0;
+	}
+	.hero h1 {
+		margin: 0 0 1.25rem;
+		font-size: clamp(2.6rem, 7vw, 4rem);
+	}
+	.lead {
+		max-width: 30rem;
+		margin: 0;
+		font-size: 1.15em;
+		color: var(--text-muted);
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 2rem;
+	}
+	.btn {
+		display: inline-block;
+		padding: 0.7rem 1.3rem;
+		border: 1px solid var(--accent);
+		border-radius: 999px;
+		font-size: 0.85em;
+		font-weight: 600;
+		line-height: 1.2;
+		text-decoration: none;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+	.btn-primary {
+		background: var(--accent);
+		color: var(--bg);
+	}
+	.btn-primary:hover {
+		background: var(--accent-hover);
+		border-color: var(--accent-hover);
+		color: var(--bg);
+	}
+	.btn-secondary {
+		background: transparent;
+		color: var(--accent);
+	}
+	.btn-secondary:hover {
+		background: var(--accent-soft);
+	}
+
+	/* ---------- Sections ---------- */
+	.section {
+		margin-top: 8rem;
+		container-type: inline-size;
+	}
+	.section h2 {
+		max-width: 28rem;
+		margin: 0 0 2.5rem;
+		font-size: clamp(1.8rem, 4.5vw, 2.5rem);
+	}
+	h3 {
+		margin: 0;
+		font-size: 1.15em;
+	}
+
+	/* A calm list: label on the left, detail on the right, thin dividers */
+	.rows {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-bottom: 1px solid var(--border);
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 11rem 1fr;
+		gap: 1rem;
+		align-items: baseline;
+		padding: 1.5rem 0;
+		border-top: 1px solid var(--border);
+	}
+	.row p,
+	.row dd {
+		margin: 0;
+	}
+	.row p {
+		font-size: 0.9em;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.row-large {
+		grid-template-columns: 15rem 1fr;
+	}
+	.row-large h3 {
+		font-size: 1.35em;
+	}
+
+	.about {
+		max-width: 34rem;
+		margin: -1rem 0 2.5rem;
+		font-size: 0.95em;
+		line-height: 1.7;
+		color: var(--text-muted);
+	}
+	.qualifications dt {
+		font-size: 0.75em;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+	.qualifications dd {
+		font-family: var(--font-space-grotesk);
+		font-size: 1.15em;
+		font-weight: 600;
+		color: var(--heading);
+	}
+
+	/* ---------- Steps ---------- */
+	.steps {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2.5rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+	.num {
+		display: grid;
+		place-items: center;
+		width: 40px;
+		height: 40px;
+		margin-bottom: 1rem;
+		border-radius: 50%;
+		background: var(--accent-soft);
+		font-family: var(--font-space-grotesk);
+		font-weight: 700;
+		color: var(--accent);
+	}
+	.step p {
+		margin: 0.35rem 0 0;
+		font-size: 0.9em;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	@container (min-width: 640px) {
+		.steps {
+			grid-template-columns: repeat(3, 1fr);
+			gap: 2rem;
+		}
+	}
+
+	/* ---------- Enquire ---------- */
+	.enquire {
+		padding: 3.5rem 2rem;
+		border: 1px solid var(--border);
+		border-radius: 28px;
+		background: var(--surface);
+		text-align: center;
+	}
+	.enquire h2 {
+		max-width: none;
+		margin-bottom: 1rem;
+	}
+	.enquire p {
+		max-width: 30rem;
+		margin: 0 auto 0.75rem;
+		font-size: 0.9em;
+		color: var(--text-muted);
+	}
+	.enquire .rate {
+		font-size: 0.95em;
+		color: var(--text);
+	}
+	.enquire .actions {
+		justify-content: center;
+	}
+
+	/* ---------- Small screens ---------- */
+	@media (max-width: 640px) {
+		.section {
+			margin-top: 5.5rem;
+		}
+		.row,
+		.row-large {
+			grid-template-columns: 1fr;
+			gap: 0.35rem;
+			padding: 1.25rem 0;
+		}
+		.enquire {
+			padding: 2.5rem 1.25rem;
+		}
+	}
+</style>
