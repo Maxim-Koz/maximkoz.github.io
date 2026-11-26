@@ -50,3 +50,14 @@ const { title, description, image = FallbackImage } = Astro.props;
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image" />
+
+<head>
+	<script is:inline>
+		try {
+			const saved = localStorage.getItem("theme");
+			if (saved === "light" || saved === "dark") {
+				document.documentElement.dataset.theme = saved;
+			}
+		} catch (e) {}
+	</script>
+</head>
