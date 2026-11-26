@@ -110,7 +110,7 @@ export function startFourierSequence(
             const nx = x + r * Math.cos(angle);
             const ny = y + r * Math.sin(angle);
 
-            if (armAlpha > 0) {
+            if (armAlpha > 0 && k < 60) {
                 if (k < outlines) {
                     ctx.globalAlpha = 0.12 * armAlpha;
                     ctx.beginPath();
@@ -146,7 +146,7 @@ export function startFourierSequence(
         if (fillPath) return fillPath;
         const path = new Path2D();
         for (let i = 0; i < parts.length; i++) {
-            const n = parts[i].samples;
+            const n = Math.min(parts[i].samples, 400);
             for (let s = 0; s < n; s++) {
                 const p = tipAt(i, s / n, 0);
                 if (s === 0) path.moveTo(p.x, p.y);
@@ -209,13 +209,14 @@ export function startFourierSequence(
         if (!finished) {
             t += dt / seconds;
             if (t >= 1) {
+                const overshoot = t - 1
                 t = 1;
                 for (let i = 0; i < parts.length; i++) {
                     extendTrail(i, tipAt(i, 1, 0));
                 }
                 finished = true;
                 fadeT = 0;
-                spinT = 0;
+                spinT = overshoot % 1;
                 if (!fade) restartAt = now + pauseSeconds * 1000;
             }
         } else if (fade && fadeT < 1) {
@@ -242,6 +243,14 @@ export function startFourierSequence(
     };
     const pause = () => { cancelAnimationFrame(raf); raf = 0; };
 
+    // Build the fill ahead of time, when the browser is idle, so the first fade frame doesn't stall
+    function prepareFill() {
+        if (!fade) return;
+        const run = () => { getFillPath(); };
+        if ("requestIdleCallback" in window) requestIdleCallback(run, { timeout: 2000 });
+        else setTimeout(run, 200);
+    }
+
     function resize() {
         const rect = canvas.getBoundingClientRect();
         if (Math.abs(rect.width - w) < 1 && Math.abs(rect.height - h) < 1) return;
@@ -260,6 +269,7 @@ export function startFourierSequence(
             (h * sizeFraction) / bounds.height,
         );
         fillPath = null;
+        prepareFill();
         rebuildTrail();
         render();
     }

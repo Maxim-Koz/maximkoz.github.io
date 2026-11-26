@@ -7,7 +7,10 @@ import ThemeToggle from "./ThemeToggle.astro";
 <header>
 	<nav>
 		<h2>
-			<a href="/">{SITE_TITLE}</a>
+			<a href="/">
+				{SITE_TITLE}
+				<span class="dot">.</span>
+			</a>
 		</h2>
 		<div class="internal-links">
 			<HeaderLink href="/">Home</HeaderLink>
@@ -61,13 +64,16 @@ import ThemeToggle from "./ThemeToggle.astro";
 	}
 	h2 {
 		margin: 0;
-		font-size: 1em;
+		font-size: 1.7em;
 	}
 
 	h2 a,
 	h2 a.active {
 		color: var(--heading);
 		text-decoration: none;
+	}
+	.dot {
+		color: var(--fourier);
 	}
 	nav {
 		display: flex;

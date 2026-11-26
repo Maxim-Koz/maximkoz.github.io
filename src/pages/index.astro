@@ -1,7 +1,45 @@
 ---
+import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import FourierCanvas from "../components/FourierCanvas.astro";
 import FourierWord from "../components/FourierWord.astro";
 import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
+
+// ---------- Edit these ----------
+const EMAIL = "your.email@example.com";
+const LINKEDIN = "https://www.linkedin.com/in/maxim-kozlovskiy";
+const GITHUB = "https://github.com/Maxim-Koz";
+
+// Portrait: save a photo as src/assets/portrait.jpg (or .jpeg / .png / .webp)
+// and it appears here automatically. Until then a placeholder is shown.
+const portraits = import.meta.glob<ImageMetadata>(
+	"../assets/portrait.{jpg,jpeg,png,webp}",
+	{ eager: true, import: "default" },
+);
+const portrait = Object.values(portraits)[0];
+
+// Feather-style icons (24x24, stroke only)
+const areas = [
+	{
+		title: "Mathematics",
+		text: "Studying Mathematics at the University of Warwick. My interests are machine learning, maths and physics.",
+		icon: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+	},
+	{
+		title: "Tutoring",
+		text: "One-to-one GCSE and A-level Maths and Further Maths tutoring, with a focus on understanding why a method works, not just how.",
+		icon: '<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>',
+		href: "/tutoring",
+		cta: "Tutoring",
+	},
+	{
+		title: "Building",
+		text: "Projects in TypeScript and Dart, from the Fourier animations on this site to a gym rep-tracking app.",
+		icon: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>',
+		href: "/projects",
+		cta: "Projects",
+	},
+];
 ---
 
 <BaseLayout
@@ -9,58 +47,363 @@ import { SITE_DESCRIPTION, SITE_TITLE } from "../consts";
 	description={SITE_DESCRIPTION}
 	background={false}
 >
-	<div style="width: min(100vw - 2rem, 600px); margin-left: 50%; transform: translateX(-50%);">
-		<FourierWord text="Hello" font="grotesk" fade={true} />
-	</div>
-	<h1>Hello, I'm Maxim</h1>
-	<p>
-		Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-		tempor incididunt ut labore et dolore magna aliqua. Vitae ultricies leo
-		integer malesuada nunc vel risus commodo viverra. Adipiscing enim eu
-		turpis egestas pretium. Euismod elementum nisi quis eleifend quam
-		adipiscing. In hac habitasse platea dictumst vestibulum. Sagittis purus
-		sit amet volutpat. Netus et malesuada fames ac turpis egestas. Eget
-		magna fermentum iaculis eu non diam phasellus vestibulum lorem. Varius
-		sit amet mattis vulputate enim. Habitasse platea dictumst quisque
-		sagittis. Integer quis auctor elit sed vulputate mi. Dictumst quisque
-		sagittis purus sit amet. Morbi tristique senectus et netus. Id semper
-		risus in hendrerit gravida rutrum quisque non tellus. Habitasse platea
-		dictumst quisque sagittis purus sit amet. Tellus molestie nunc non
-		blandit massa. Cursus vitae congue mauris rhoncus. Accumsan tortor
-		posuere ac ut. Fringilla urna porttitor rhoncus dolor. Elit ullamcorper
-		dignissim cras tincidunt lobortis. In cursus turpis massa tincidunt dui
-		ut ornare lectus. Integer feugiat scelerisque varius morbi enim nunc.
-		Bibendum neque egestas congue quisque egestas diam. Cras ornare arcu dui
-		vivamus arcu felis bibendum. Dignissim suspendisse in est ante in nibh
-		mauris. Sed tempus urna et pharetra pharetra massa massa ultricies mi.
-		Mollis nunc sed id semper risus in. Convallis a cras semper auctor
-		neque. Diam sit amet nisl suscipit. Lacus viverra vitae congue eu
-		consequat ac felis donec. Egestas integer eget aliquet nibh praesent
-		tristique magna sit amet. Eget magna fermentum iaculis eu non diam. In
-		vitae turpis massa sed elementum. Tristique et egestas quis ipsum
-		suspendisse ultrices. Eget lorem dolor sed viverra ipsum. Vel turpis
-		nunc eget lorem dolor sed viverra. Posuere ac ut consequat semper
-		viverra nam. Laoreet suspendisse interdum consectetur libero id
-		faucibus. Diam phasellus vestibulum lorem sed risus ultricies tristique.
-		Rhoncus dolor purus non enim praesent elementum facilisis. Ultrices
-		tincidunt arcu non sodales neque. Tempus egestas sed sed risus pretium
-		quam vulputate. Viverra suspendisse potenti nullam ac tortor vitae purus
-		faucibus ornare. Fringilla urna porttitor rhoncus dolor purus non. Amet
-		dictum sit amet justo donec enim. Mattis ullamcorper velit sed
-		ullamcorper morbi tincidunt. Tortor posuere ac ut consequat semper
-		viverra. Tellus mauris a diam maecenas sed enim ut sem viverra.
-		Venenatis urna cursus eget nunc scelerisque viverra mauris in. Arcu ac
-		tortor dignissim convallis aenean et tortor at. Curabitur gravida arcu
-		ac tortor dignissim convallis aenean et tortor. Egestas tellus rutrum
-		tellus pellentesque eu. Fusce ut placerat orci nulla pellentesque
-		dignissim enim sit amet. Ut enim blandit volutpat maecenas volutpat
-		blandit aliquam etiam. Id donec ultrices tincidunt arcu. Id cursus metus
-		aliquam eleifend mi. Tempus quam pellentesque nec nam aliquam sem. Risus
-		at ultrices mi tempus imperdiet. Id porta nibh venenatis cras sed felis
-		eget velit. Ipsum a arcu cursus vitae. Facilisis magna etiam tempor orci
-		eu lobortis elementum. Tincidunt dui ut ornare lectus sit. Quisque non
-		tellus orci ac. Blandit libero volutpat sed cras. Nec tincidunt praesent
-		semper feugiat nibh sed pulvinar proin gravida. Egestas integer eget
-		aliquet nibh praesent tristique magna.
-	</p>
+	<!-- ============ Hero ============ -->
+	<section class="hero">
+		<div class="hero-text">
+			<p class="eyebrow">Mathematics · University of Warwick</p>
+			<h1>
+				Maxim Kozlovskiy<span class="dot">.</span>
+			</h1>
+			<p class="lead">
+				I study Mathematics at the University of Warwick. I tutor GCSE
+				and A-level Maths and Further Maths, and I build things with
+				code, from animations of Fourier series to small apps.
+			</p>
+			<div class="actions">
+				<a class="btn btn-primary" href="#contact">
+					Get in touch
+				</a>
+				<a class="btn btn-secondary" href="/projects">
+					See my projects
+				</a>
+			</div>
+		</div>
+
+		<div class="portrait">
+			<!-- A large π, drawn by circles, peeking out from behind the photo -->
+			<div class="portrait-art" aria-hidden="true">
+				<FourierCanvas shape="pi" circles={200} />
+			</div>
+			<div class="portrait-frame">
+				{portrait ? (
+					<Image
+						src={portrait}
+						alt="Maxim Kozlovskiy"
+						width={760}
+						height={950}
+						loading="eager"
+					/>
+				) : (
+					<div class="placeholder" aria-hidden="true">
+						<span>
+							MK<span class="dot">.</span>
+						</span>
+					</div>
+				)}
+			</div>
+		</div>
+	</section>
+
+	<!-- ============ What I do ============ -->
+	<section class="section">
+		<h2>What I do</h2>
+		<div class="areas">
+			{areas.map((area) => (
+				<article class="area">
+					<div class="icon">
+						<svg viewBox="0 0 24 24" aria-hidden="true">
+							<Fragment set:html={area.icon} />
+						</svg>
+					</div>
+					<h3>{area.title}</h3>
+					<p>{area.text}</p>
+					{area.href && (
+						<a class="more" href={area.href}>
+							{area.cta} →
+						</a>
+					)}
+				</article>
+			))}
+		</div>
+	</section>
+
+	<!-- ============ The circles ============ -->
+	<section class="section feature">
+		<div class="feature-art">
+			<FourierWord
+				text="Maxim"
+				font="grotesk"
+				density={1.5}
+				circles={100}
+				seconds={20}
+				fade={true}
+			/>
+		</div>
+		<div class="feature-text">
+			<p class="eyebrow">About the drawings</p>
+			<h2>Everything here is drawn with circles</h2>
+			<p>
+				Each drawing on this site is a Fourier series: a chain of
+				circles, each turning at its own steady speed, where the tip of
+				the last arm traces out a shape. Add enough circles and the tip
+				can draw almost anything, including my name.
+			</p>
+			<p>
+				I wrote the code myself in TypeScript, and what you see is the
+				real calculation running in your browser, not a recording.
+			</p>
+			<a class="more" href="/projects">
+				See the projects →
+			</a>
+		</div>
+	</section>
+
+	<!-- ============ Contact ============ -->
+	<section class="section contact" id="contact">
+		<h2>Get in touch</h2>
+		<p>For tutoring enquiries, projects, or just to say hello.</p>
+		<div class="actions">
+			<a class="btn btn-primary" href={`mailto:${EMAIL}`}>
+				{EMAIL}
+			</a>
+			<a
+				class="btn btn-secondary"
+				href={LINKEDIN}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				LinkedIn
+			</a>
+			<a
+				class="btn btn-secondary"
+				href={GITHUB}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				GitHub
+			</a>
+		</div>
+	</section>
 </BaseLayout>
+
+<style>
+	.dot {
+		color: var(--fourier);
+	}
+
+	.eyebrow {
+		margin: 0 0 0.75rem;
+		font-size: 0.8em;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--text-muted);
+	}
+
+	/* ---------- Hero ---------- */
+	.hero {
+		position: relative;
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+		gap: 3rem;
+		align-items: center;
+		padding: 1rem 0 2rem;
+		overflow-x: clip; /* the π behind the photo can't cause sideways scrolling */
+	}
+	.hero h1 {
+		margin: 0 0 1rem;
+		font-size: clamp(2.3rem, 5.5vw, 3.5rem);
+	}
+	.lead {
+		max-width: 34rem;
+		margin: 0;
+		font-size: 1.1em;
+		color: var(--text-muted);
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-top: 1.75rem;
+	}
+	.btn {
+		display: inline-block;
+		padding: 0.7rem 1.3rem;
+		border: 1px solid var(--accent);
+		border-radius: 999px;
+		font-size: 0.85em;
+		font-weight: 600;
+		line-height: 1.2;
+		text-decoration: none;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+	.btn-primary {
+		background: var(--accent);
+		color: var(--bg);
+	}
+	.btn-primary:hover {
+		background: var(--accent-hover);
+		border-color: var(--accent-hover);
+		color: var(--bg);
+	}
+	.btn-secondary {
+		background: transparent;
+		color: var(--accent);
+	}
+	.btn-secondary:hover {
+		background: var(--accent-soft);
+	}
+
+	/* ---------- Portrait ---------- */
+	.portrait {
+		position: relative;
+		justify-self: end;
+		width: min(100%, 360px);
+	}
+	.portrait-art {
+		position: absolute;
+		bottom: -28%;
+		left: -40%;
+		width: 150%;
+		opacity: 0.5;
+		pointer-events: none;
+		z-index: 0;
+	}
+	.portrait-frame {
+		position: relative;
+		z-index: 1;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		border: 1px solid var(--border);
+		border-radius: 28px;
+		background: var(--surface);
+		box-shadow: var(--shadow);
+	}
+	.portrait-frame :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		border-radius: 0;
+		object-fit: cover;
+	}
+	.placeholder {
+		display: grid;
+		place-items: center;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+		font-family: var(--font-space-grotesk);
+		font-size: 4.5rem;
+		font-weight: 700;
+		color: var(--heading);
+	}
+
+	/* ---------- Sections ---------- */
+	.section {
+		margin-top: 4.5rem;
+	}
+	.section h2 {
+		margin: 0 0 1.25rem;
+		font-size: clamp(1.7rem, 4vw, 2.3rem);
+	}
+
+	.areas {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+		gap: 1.25rem;
+	}
+	.area {
+		display: flex;
+		flex-direction: column;
+		padding: 1.5rem;
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		background: var(--surface);
+	}
+	.icon {
+		display: grid;
+		place-items: center;
+		width: 44px;
+		height: 44px;
+		margin-bottom: 1rem;
+		border-radius: 12px;
+		background: var(--accent-soft);
+		color: var(--accent);
+	}
+	.icon svg {
+		width: 22px;
+		height: 22px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+	.area h3 {
+		margin: 0 0 0.4rem;
+		font-size: 1.25em;
+	}
+	.area p {
+		margin: 0 0 1rem;
+		font-size: 0.85em;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.more {
+		margin-top: auto;
+		font-size: 0.85em;
+		font-weight: 600;
+		text-decoration: none;
+	}
+	.more:hover {
+		text-decoration: underline;
+	}
+
+	/* ---------- Feature: the circles ---------- */
+	.feature {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 3rem;
+		align-items: center;
+		padding: 2.5rem;
+		border: 1px solid var(--border);
+		border-radius: 28px;
+		background: var(--surface);
+	}
+	.feature-text p:not(.eyebrow) {
+		font-size: 0.9em;
+		line-height: 1.7;
+		color: var(--text-muted);
+	}
+	.feature-text h2 {
+		margin-bottom: 1rem;
+	}
+
+	/* ---------- Contact ---------- */
+	.contact {
+		padding: 3rem 2rem;
+		border-top: 1px solid var(--border);
+		text-align: center;
+	}
+	.contact p {
+		margin: 0;
+		color: var(--text-muted);
+	}
+	.contact .actions {
+		justify-content: center;
+	}
+
+	/* ---------- Small screens ---------- */
+	@media (max-width: 800px) {
+		.hero,
+		.feature {
+			grid-template-columns: 1fr;
+			gap: 2rem;
+		}
+		.portrait {
+			order: -1;
+			justify-self: center;
+			width: min(70%, 260px);
+		}
+		.portrait-art {
+			display: none; /* keep the phone layout clean */
+		}
+		.feature {
+			padding: 1.5rem;
+		}
+	}
+</style>
