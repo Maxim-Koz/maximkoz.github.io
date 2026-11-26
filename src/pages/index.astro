@@ -70,10 +70,6 @@ const areas = [
 		</div>
 
 		<div class="portrait">
-			<!-- A large π, drawn by circles, peeking out from behind the photo -->
-			<div class="portrait-art" aria-hidden="true">
-				<FourierCanvas shape="pi" circles={200} />
-			</div>
 			<div class="portrait-frame">
 				{portrait ? (
 					<Image
@@ -130,21 +126,34 @@ const areas = [
 			/>
 		</div>
 		<div class="feature-text">
-			<p class="eyebrow">About the drawings</p>
-			<h2>Everything here is drawn with circles</h2>
+			<p class="eyebrow">Behind the drawings</p>
+			<h2>Find out how these drawings are made</h2>
 			<p>
-				Each drawing on this site is a Fourier series: a chain of
-				circles, each turning at its own steady speed, where the tip of
-				the last arm traces out a shape. Add enough circles and the tip
-				can draw almost anything, including my name.
-			</p>
-			<p>
-				I wrote the code myself in TypeScript, and what you see is the
-				real calculation running in your browser, not a recording.
+				The animations on this site are written from scratch in
+				TypeScript and run live in your browser, not as recordings. The
+				projects page walks through how each one works.
 			</p>
 			<a class="more" href="/projects">
 				See the projects →
 			</a>
+		</div>
+	</section>
+
+	<!-- ============ Fourier showcase ============ -->
+	<section class="section showcase">
+		<div class="showcase-text">
+			<p class="eyebrow">Fourier series</p>
+			<h2>Any shape can be drawn with circles</h2>
+			<p>
+				A Fourier series breaks a closed curve into a chain of circles,
+				each turning at its own steady speed. The tip of the last arm
+				traces out the shape, and the more circles you add, the closer
+				the drawing gets to the original.
+			</p>
+			<p>The π on the right is drawn this way, using 200 circles.</p>
+		</div>
+		<div class="showcase-art" aria-hidden="true">
+			<FourierCanvas shape="pi" circles={200} />
 		</div>
 	</section>
 
@@ -198,7 +207,6 @@ const areas = [
 		gap: 3rem;
 		align-items: center;
 		padding: 1rem 0 2rem;
-		overflow-x: clip; /* the π behind the photo can't cause sideways scrolling */
 	}
 	.hero h1 {
 		margin: 0 0 1rem;
@@ -253,18 +261,7 @@ const areas = [
 		justify-self: end;
 		width: min(100%, 360px);
 	}
-	.portrait-art {
-		position: absolute;
-		bottom: -28%;
-		left: -40%;
-		width: 150%;
-		opacity: 0.5;
-		pointer-events: none;
-		z-index: 0;
-	}
 	.portrait-frame {
-		position: relative;
-		z-index: 1;
 		aspect-ratio: 4 / 5;
 		overflow: hidden;
 		border: 1px solid var(--border);
@@ -373,6 +370,28 @@ const areas = [
 		margin-bottom: 1rem;
 	}
 
+	/* ---------- Showcase: the π ---------- */
+	.showcase {
+		display: grid;
+		grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+		gap: 3rem;
+		align-items: center;
+	}
+	.showcase-text h2 {
+		margin-bottom: 1rem;
+	}
+	.showcase-text p:not(.eyebrow) {
+		max-width: 32rem;
+		font-size: 0.9em;
+		line-height: 1.7;
+		color: var(--text-muted);
+	}
+	.showcase-art {
+		width: 100%;
+		max-width: 520px;
+		justify-self: center;
+	}
+
 	/* ---------- Contact ---------- */
 	.contact {
 		padding: 3rem 2rem;
@@ -390,7 +409,8 @@ const areas = [
 	/* ---------- Small screens ---------- */
 	@media (max-width: 800px) {
 		.hero,
-		.feature {
+		.feature,
+		.showcase {
 			grid-template-columns: 1fr;
 			gap: 2rem;
 		}
@@ -399,8 +419,8 @@ const areas = [
 			justify-self: center;
 			width: min(70%, 260px);
 		}
-		.portrait-art {
-			display: none; /* keep the phone layout clean */
+		.showcase-art {
+			max-width: 380px;
 		}
 		.feature {
 			padding: 1.5rem;
