@@ -180,7 +180,7 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	}
 	.thumb {
 		aspect-ratio: 2 / 1;
-		width: 50%;
+		width: 60%;
 		margin-bottom: 0.5rem;
 		border-radius: 8px;
 		overflow: hidden;
@@ -239,7 +239,7 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 		margin: 0;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 		gap: 1.5rem;
 	}
 	.pinned-card {
@@ -324,6 +324,21 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	window.addEventListener("scroll", queueUpdate, { passive: true });
 	window.addEventListener("resize", queueUpdate);
 	update();
+
+	const root = document.documentElement;
+	const first = items[0];
+
+	function syncSnap() {
+		if (!first) return;
+		const r = first.getBoundingClientRect();
+		const centre = r.top + r.height / 2;
+		root.style.scrollSnapType =
+			centre >= window.innerHeight / 2 - r.height / 2 ? "none" : "";
+	}
+
+	window.addEventListener("scroll", syncSnap, { passive: true });
+	window.addEventListener("resize", syncSnap);
+	syncSnap();
 
 	// arrow keys jump between projects
 	let pending: number | null = null;

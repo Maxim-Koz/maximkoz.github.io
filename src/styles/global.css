@@ -1,11 +1,3 @@
-/*
-  Based on Bear Blog's default CSS.
-  https://github.com/HermanMartinus/bearblog/blob/297026a877bc2ab2b3bdfbd6b9f7961c350917dd/templates/styles/blog/default.css
-  License MIT: https://github.com/HermanMartinus/bearblog/blob/master/LICENSE.md
- */
-
-/* ---------- Theme tokens ---------- */
-
 /* Light theme (default) */
 :root {
 	color-scheme: light;
@@ -94,7 +86,7 @@ body {
 }
 
 main {
-	width: 720px;
+	width: 1200px;
 	max-width: calc(100% - 2em);
 	margin: auto;
 	padding: 3em 1em;
