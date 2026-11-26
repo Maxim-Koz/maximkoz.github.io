@@ -94,7 +94,12 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 
 <style is:global>
 	html {
-		scroll-snap-type: y proximity;
+		scroll-snap-type: none;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		html.snap-ready {
+			scroll-snap-type: y proximity;
+		}
 	}
 </style>
 
@@ -287,9 +292,6 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 		.dot {
 			transform: none;
 		}
-		html {
-			scroll-snap-type: none;
-		}
 	}
 </style>
 
@@ -327,6 +329,16 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 
 	const root = document.documentElement;
 	const first = items[0];
+
+	// Snapping only switches on once the visitor actually scrolls
+	const enableSnap = () =>
+		document.documentElement.classList.add("snap-ready");
+	["wheel", "touchstart", "keydown", "pointerdown"].forEach((type) =>
+		window.addEventListener(type, enableSnap, {
+			once: true,
+			passive: true,
+		}),
+	);
 
 	function syncSnap() {
 		if (!first) return;
