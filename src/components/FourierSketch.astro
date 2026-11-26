@@ -1,0 +1,238 @@
+---
+interface Props {
+    circles?: number;
+}
+const { circles = 120 } = Astro.props;
+---
+
+<div class="sketch" data-sketch data-circles={circles}>
+    <canvas class="anim" aria-hidden="true"></canvas>
+    <canvas
+        class="ink"
+        role="img"
+        aria-label="Drawing area: draw any shape with a mouse or finger and it is redrawn by circles"
+    ></canvas>
+    <p class="hint">Draw anything here</p>
+    <button type="button" class="reset" aria-label="Reset the drawing area">
+        Reset
+    </button>
+</div>
+
+<style>
+    .sketch {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        background: var(--surface);
+        user-select: none;
+    }
+    canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+    .ink {
+        cursor: crosshair;
+        touch-action: none; /* so drawing with a finger doesn't scroll the page */
+    }
+    .hint {
+        position: absolute;
+        left: 50%;
+        bottom: 1rem;
+        margin: 0;
+        padding: 0.35rem 0.9rem;
+        transform: translateX(-50%);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg);
+        font-size: 0.75em;
+        line-height: 1.4;
+        white-space: nowrap;
+        color: var(--text-muted);
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+    .hint.hidden {
+        opacity: 0;
+    }
+    .reset {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        padding: 0.3rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg);
+        font: inherit;
+        font-size: 0.75em;
+        font-weight: 600;
+        color: var(--accent);
+        cursor: pointer;
+    }
+    .reset:hover {
+        background: var(--accent-soft);
+    }
+</style>
+
+<script>
+    import { startFourier } from "../scripts/fourier";
+    import { presets } from "../scripts/shapes";
+    import type { Complex } from "../scripts/complex";
+
+    // Turn a hand-drawn line into evenly spaced points around a closed loop
+    function resample(raw: Complex[], n: number): Complex[] {
+        const pts = [...raw, raw[0]]; // close the loop
+        const cum = [0];
+        for (let i = 1; i < pts.length; i++) {
+            cum.push(
+                cum[i - 1] +
+                    Math.hypot(
+                        pts[i].real - pts[i - 1].real,
+                        pts[i].imag - pts[i - 1].imag,
+                    ),
+            );
+        }
+        const total = cum[cum.length - 1];
+
+        const out: Complex[] = [];
+        let seg = 1;
+        for (let k = 0; k < n; k++) {
+            const target = (k / n) * total;
+            while (seg < cum.length - 1 && cum[seg] < target) seg++;
+            const span = cum[seg] - cum[seg - 1] || 1;
+            const f = (target - cum[seg - 1]) / span;
+            out.push({
+                real:
+                    pts[seg - 1].real + (pts[seg].real - pts[seg - 1].real) * f,
+                imag:
+                    pts[seg - 1].imag + (pts[seg].imag - pts[seg - 1].imag) * f,
+            });
+        }
+        return out;
+    }
+
+    document.querySelectorAll<HTMLElement>("[data-sketch]").forEach((box) => {
+        const anim = box.querySelector<HTMLCanvasElement>(".anim")!;
+        const ink = box.querySelector<HTMLCanvasElement>(".ink")!;
+        const hint = box.querySelector<HTMLElement>(".hint")!;
+        const reset = box.querySelector<HTMLButtonElement>(".reset")!;
+        const circles = Number(box.dataset.circles);
+        const inkCtx = ink.getContext("2d")!;
+
+        let stop: (() => void) | null = null;
+        let demoToken = 0; // lets a drawing cancel a demo that is still loading
+        let demoPoints: Complex[] | null = null; // loaded once, then reused
+        let line: Complex[] = [];
+        let drawing = false;
+        let dpr = 1;
+
+        function fitInk() {
+            const r = ink.getBoundingClientRect();
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            ink.width = Math.round(r.width * dpr);
+            ink.height = Math.round(r.height * dpr);
+            inkCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        fitInk();
+        new ResizeObserver(fitInk).observe(ink);
+
+        function clearInk() {
+            inkCtx.clearRect(0, 0, ink.width / dpr, ink.height / dpr);
+        }
+        function clearAnim() {
+            const c = anim.getContext("2d")!;
+            c.save();
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.clearRect(0, 0, anim.width, anim.height);
+            c.restore();
+        }
+
+        function play(points: Complex[]) {
+            stop?.();
+            clearAnim();
+            stop = startFourier(anim, points, { circles });
+        }
+
+        // A π is drawn until the visitor draws something of their own
+        async function showDemo() {
+            const token = ++demoToken;
+            clearInk();
+            hint.classList.remove("hidden");
+            try {
+                demoPoints ??= await presets.pi(300);
+            } catch (err) {
+                console.error("Could not build the demo shape", err);
+                return;
+            }
+            if (token !== demoToken) return; // the visitor started drawing meanwhile
+            play(demoPoints);
+        }
+
+        const pointOf = (e: PointerEvent): Complex => {
+            const r = ink.getBoundingClientRect();
+            return { real: e.clientX - r.left, imag: e.clientY - r.top };
+        };
+
+        ink.addEventListener("pointerdown", (e) => {
+            demoToken++; // cancel a demo that hasn't started yet
+            ink.setPointerCapture(e.pointerId);
+            stop?.();
+            stop = null;
+            clearAnim();
+            clearInk();
+            hint.classList.add("hidden");
+            line = [pointOf(e)];
+            drawing = true;
+        });
+
+        ink.addEventListener("pointermove", (e) => {
+            if (!drawing) return;
+            const p = pointOf(e);
+            const last = line[line.length - 1];
+            if (Math.hypot(p.real - last.real, p.imag - last.imag) < 2) return;
+
+            inkCtx.strokeStyle =
+                getComputedStyle(document.documentElement)
+                    .getPropertyValue("--accent")
+                    .trim() || "#1a5fd6";
+            inkCtx.lineWidth = 3;
+            inkCtx.lineCap = "round";
+            inkCtx.beginPath();
+            inkCtx.moveTo(last.real, last.imag);
+            inkCtx.lineTo(p.real, p.imag);
+            inkCtx.stroke();
+            line.push(p);
+        });
+
+        function finish() {
+            if (!drawing) return;
+            drawing = false;
+
+            let length = 0;
+            for (let i = 1; i < line.length; i++) {
+                length += Math.hypot(
+                    line[i].real - line[i - 1].real,
+                    line[i].imag - line[i - 1].imag,
+                );
+            }
+            // Too short to be a shape: go back to the demo
+            if (line.length < 8 || length < 60) {
+                showDemo();
+                return;
+            }
+
+            clearInk();
+            play(resample(line, 300));
+        }
+        ink.addEventListener("pointerup", finish);
+        ink.addEventListener("pointercancel", finish);
+
+        reset.addEventListener("click", showDemo);
+        showDemo();
+    });
+</script>
