@@ -30,4 +30,6 @@ The report was written and typeset in LaTeX, which I learned specifically for th
   title="Principle of Least Action"
 ></iframe>
 
-[Open PDF in a new tab](/projects/least-action.pdf)
+<a href="/projects/least-action.pdf" target="_blank" rel="noopener noreferrer">
+  Open PDF in a new tab
+</a>
