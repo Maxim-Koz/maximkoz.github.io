@@ -5,6 +5,8 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import FourierWord from "../../components/FourierWord.astro";
 import FormattedDate from "../../components/FormattedDate.astro";
 
+const GITHUB = "https://github.com/Maxim-Koz";
+
 const newestFirst = (
 	a: { data: { pubDate: Date } },
 	b: { data: { pubDate: Date } },
@@ -13,6 +15,7 @@ const newestFirst = (
 const allProjects = (await getCollection("projects")).sort(newestFirst);
 
 const pinned = allProjects.filter((project) => project.data.pinned);
+const hasProjects = allProjects.length > 0;
 ---
 
 <BaseLayout
@@ -23,10 +26,28 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	<div style="width: min(100vw - 2rem, 600px); margin-left: 50%; transform: translateX(-50%);">
 		<FourierWord text="Projects" font="grotesk" fade={true} />
 	</div>
+	<p class="intro">
+		Things I’ve built, from animations and apps to experiments. Open any
+		project to see how it works.
+	</p>
+
+	{!hasProjects && (
+		<section class="empty">
+			<h2>Projects are on their way</h2>
+			<p>
+				I’m writing up what I’ve built. In the meantime, the code is on
+				<a href={GITHUB} target="_blank" rel="noopener noreferrer">
+					GitHub
+				</a>
+				.
+			</p>
+		</section>
+	)}
+
 	{pinned.length > 0 && (
 		<section aria-labelledby="pinned-heading">
 			<p class="section-label" id="pinned-heading">
-				Pinned
+				Featured
 			</p>
 			<ul class="pinned-grid">
 				{pinned.map((project) => (
@@ -35,61 +56,73 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 							href={`/projects/${project.id}/`}
 							class="pinned-card"
 						>
-							<div class="meta">
-								<FormattedDate date={project.data.pubDate} />
-							</div>
-							<h2 class="title">{project.data.title}</h2>
 							<div class="thumb">
-								{project.data.heroImage ? (
+								{project.data.heroImage && (
 									<Image
 										width={720}
 										height={360}
 										src={project.data.heroImage}
 										alt=""
 									/>
-								) : (
-									<span
-										class="thumb-empty"
-										aria-hidden="true"
-									/>
 								)}
 							</div>
-							<p class="description">
-								{project.data.description}
-							</p>
+							<div class="body">
+								<div class="meta">
+									<FormattedDate
+										date={project.data.pubDate}
+									/>
+								</div>
+								<h2 class="title">{project.data.title}</h2>
+								<p class="description">
+									{project.data.description}
+								</p>
+								<span class="cta">View project →</span>
+							</div>
 						</a>
 					</li>
 				))}
 			</ul>
-			<p class="section-label timeline-label">Timeline</p>
+			<p class="section-label timeline-label">All projects</p>
 		</section>
 	)}
-	<ol class="timeline">
-		{allProjects.map((project) => (
-			<li class="project" data-project>
-				<span class="dot" aria-hidden="true" />
-				<a href={`/projects/${project.id}/`} class="card">
-					<div class="meta">
-						<FormattedDate date={project.data.pubDate} />
-					</div>
-					<h2 class="title">{project.data.title}</h2>
-					<div class="thumb">
-						{project.data.heroImage ? (
-							<Image
-								width={720}
-								height={360}
-								src={project.data.heroImage}
-								alt=""
-							/>
-						) : (
-							<span class="thumb-sempty" aria-hidden="true" />
+
+	{hasProjects && (
+		<ol class="timeline">
+			{allProjects.map((project) => (
+				<li class="project" data-project>
+					<span class="dot" aria-hidden="true" />
+					<a
+						href={`/projects/${project.id}/`}
+						class:list={[
+							"card",
+							{ "has-thumb": Boolean(project.data.heroImage) },
+						]}
+					>
+						<div class="body">
+							<div class="meta">
+								<FormattedDate date={project.data.pubDate} />
+							</div>
+							<h2 class="title">{project.data.title}</h2>
+							<p class="description">
+								{project.data.description}
+							</p>
+							<span class="cta">View project →</span>
+						</div>
+						{project.data.heroImage && (
+							<div class="thumb">
+								<Image
+									width={720}
+									height={360}
+									src={project.data.heroImage}
+									alt=""
+								/>
+							</div>
 						)}
-					</div>
-					<p class="description">{project.data.description}</p>
-				</a>
-			</li>
-		))}
-	</ol>
+					</a>
+				</li>
+			))}
+		</ol>
+	)}
 </BaseLayout>
 
 <style is:global>
@@ -108,6 +141,146 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 		width: 840px;
 	}
 
+	/* ---------- Intro and empty state ---------- */
+	.intro {
+		max-width: 34rem;
+		margin: 0.5rem auto 0;
+		text-align: center;
+		font-size: 1.05em;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.empty {
+		margin-top: 3rem;
+		padding: 2.5rem 2rem;
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		background: var(--surface);
+		text-align: center;
+	}
+	.empty h2 {
+		margin: 0 0 0.5rem;
+		font-size: 1.4em;
+	}
+	.empty p {
+		margin: 0;
+		color: var(--text-muted);
+	}
+
+	/* ---------- Shared card pieces ---------- */
+	.meta {
+		display: flex;
+		gap: 0.75rem;
+		align-items: center;
+		font-size: 0.7em;
+		color: var(--grey);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+	}
+	.title {
+		margin: 0.3rem 0 0.5rem;
+		font-size: 1.5em;
+		line-height: 1.25;
+		color: var(--heading);
+		transition: color 0.2s ease;
+	}
+	.description {
+		margin: 0;
+		font-size: 0.88em;
+		line-height: 1.6;
+		color: var(--text-muted);
+	}
+	.cta {
+		display: inline-block;
+		margin-top: 1rem;
+		font-size: 0.85em;
+		font-weight: 600;
+		color: var(--accent);
+	}
+	.thumb {
+		aspect-ratio: 2 / 1;
+		overflow: hidden;
+		background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+	}
+	.thumb img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		margin: 0;
+		border-radius: 0;
+	}
+
+	.pinned-card:hover .title,
+	.card:hover .title {
+		color: var(--accent);
+	}
+	.pinned-card:hover .cta,
+	.card:hover .cta {
+		text-decoration: underline;
+	}
+	.pinned-card:focus-visible,
+	.card:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+
+	/* ---------- Featured ---------- */
+	.section-label {
+		margin: 2.5rem 0 0.75rem;
+		font-size: 0.7em;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent);
+		font-weight: 700;
+	}
+	.timeline-label {
+		margin-top: 3.5rem;
+		color: var(--grey);
+	}
+	.pinned-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+		gap: 1.5rem;
+	}
+	.pinned-card {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		box-sizing: border-box;
+		overflow: hidden;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		text-decoration: none;
+		color: var(--text);
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
+	}
+	.pinned-card:hover {
+		border-color: var(--accent);
+		box-shadow: var(--shadow);
+	}
+	.pinned-card .thumb {
+		border-bottom: 1px solid var(--border);
+	}
+	.pinned-card .body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 1.1rem 1.4rem 1.4rem;
+	}
+	.pinned-card .cta {
+		margin-top: auto;
+		padding-top: 1rem;
+	}
+
+	/* ---------- Timeline ---------- */
 	.timeline {
 		--line-x: 0.75rem;
 		list-style: none;
@@ -152,10 +325,12 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 	}
 
 	.card {
-		display: block;
+		display: grid;
+		gap: 1.5rem;
+		align-items: center;
 		width: 100%;
 		box-sizing: border-box;
-		padding: 1.25rem 1.5rem;
+		padding: 1.5rem;
 		background: var(--surface);
 		border: 1px solid
 			color-mix(
@@ -163,7 +338,7 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 				var(--accent) calc(var(--focus) * 100%),
 				var(--border)
 			);
-		border-radius: 12px;
+		border-radius: 20px;
 		text-decoration: none;
 		color: var(--text);
 		transform-origin: left center;
@@ -171,110 +346,29 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 		opacity: calc(0.35 + 0.65 * var(--focus));
 		will-change: transform, opacity;
 	}
+	.card.has-thumb {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+	}
 	.card:hover {
 		box-shadow: var(--shadow);
 	}
-	.title {
-		margin: 0.25rem 0 0.5rem;
-		font-size: 1.8em;
-		color: var(--heading);
-		transition: color 0.2s ease;
-	}
-	.card:hover .title {
-		color: var(--accent);
-	}
-	.thumb {
-		aspect-ratio: 2 / 1;
-		width: 60%;
-		margin-bottom: 0.5rem;
-		border-radius: 8px;
-		overflow: hidden;
-		background: var(--border);
-	}
-
-	.pinned-card .thumb {
-		width: 100%;
-	}
-	.thumb img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		margin: 0;
-		border-radius: 0;
+	.card .thumb {
+		border: 1px solid var(--border);
+		border-radius: 12px;
 	}
 	.card .thumb img {
 		filter: grayscale(calc(1 - var(--focus)));
 	}
-	.thumb-empty {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-	.description {
-		margin: 0;
-		font-size: 0.85em;
-		color: var(--text-muted);
-	}
-
-	.meta {
-		display: flex;
-		gap: 0.75rem;
-		align-items: center;
-		font-size: 0.7em;
-		color: var(--grey);
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-	}
-
-	.section-label {
-		margin: 2rem 0 0.75rem;
-		font-size: 0.7em;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: var(--accent);
-		font-weight: 700;
-	}
-	.timeline-label {
-		margin-top: 3rem;
-		color: var(--grey);
-	}
-	.pinned-grid {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 1.5rem;
-	}
-	.pinned-card {
-		display: block;
-		height: 100%;
-		box-sizing: border-box;
-		padding: 1.25rem 1.5rem;
-		background: var(--surface);
-		border: 1px solid var(--border);
-		border-radius: 12px;
-		text-decoration: none;
-		color: var(--text);
-		transition:
-			border-color 0.2s ease,
-			box-shadow 0.2s ease;
-	}
-	.pinned-card:hover {
-		border-color: var(--accent);
-		box-shadow: var(--shadow);
-	}
-	.pinned-card:hover .title {
-		color: var(--accent);
-	}
 
 	@media (max-width: 720px) {
+		.intro {
+			font-size: 1em;
+		}
 		.pinned-grid {
 			grid-template-columns: 1fr;
 		}
-		.pinned-card {
-			padding: 1rem;
+		.pinned-card .body {
+			padding: 1rem 1.1rem 1.2rem;
 		}
 		.timeline {
 			padding-left: 2.25rem;
@@ -283,7 +377,14 @@ const pinned = allProjects.filter((project) => project.data.pinned);
 			left: calc(var(--line-x) - 2.25rem - 6px);
 		}
 		.card {
-			padding: 1rem;
+			padding: 1.1rem;
+			gap: 1rem;
+		}
+		.card.has-thumb {
+			grid-template-columns: 1fr;
+		}
+		.card.has-thumb .thumb {
+			order: -1;
 		}
 	}
 
