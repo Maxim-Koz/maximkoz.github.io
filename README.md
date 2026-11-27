@@ -2,5 +2,4 @@
 
 Personal website showcasing my background, projects, and interests.
 
-//! Add link
-[Visit the website]
+[Visit the website](https://maximkoz.github.io/)
