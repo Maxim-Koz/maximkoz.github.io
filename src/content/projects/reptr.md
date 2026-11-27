@@ -1,7 +1,7 @@
 ---
 title: 'Reptr'
 description: 'Lorem ipsum dolor sit amet'
-pubDate: 'Jul 22 2022'
+pubDate: 'Jun 22 2026'
 heroImage: '../../assets/reptr-banner.png'
 ---
 
