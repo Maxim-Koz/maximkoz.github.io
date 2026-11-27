@@ -1,0 +1,300 @@
+---
+interface Props {
+    maxWidth?: string; // e.g. "560px"
+}
+const { maxWidth = "100%" } = Astro.props;
+---
+
+<div class="detail" data-detail style={`max-width: ${maxWidth}`}>
+    <canvas
+        role="img"
+        aria-label="An outline (dashed) and its approximation by a chosen number of circles"
+    ></canvas>
+    <div class="controls">
+        <div class="shapes" role="group" aria-label="Shape">
+            <button type="button" class="chip active" data-shape="H">
+                H · corners
+            </button>
+            <button type="button" class="chip" data-shape="o">
+                o · smooth
+            </button>
+            <button type="button" class="chip" data-shape="pi">
+                π
+            </button>
+        </div>
+        <label class="slider">
+            <span>
+                Circles: <strong class="count">8</strong>
+            </span>
+            <input
+                type="range"
+                min="0"
+                max="100"
+                value="16"
+                aria-label="Number of circles"
+            />
+        </label>
+        <p class="readout" aria-live="polite">
+            Loading…
+        </p>
+    </div>
+</div>
+
+<style>
+    .detail {
+        margin-inline: auto;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        background: var(--surface);
+    }
+    canvas {
+        display: block;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+    }
+    .controls {
+        display: grid;
+        gap: 0.9rem;
+        padding: 1rem 1.25rem 1.25rem;
+        border-top: 1px solid var(--border);
+    }
+    .shapes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .chip {
+        padding: 0.3rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--bg);
+        font: inherit;
+        font-size: 0.8em;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+    .chip:hover {
+        background: var(--accent-soft);
+    }
+    .chip.active {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: var(--accent);
+    }
+    .slider {
+        display: grid;
+        gap: 0.4rem;
+        font-size: 0.85em;
+        color: var(--text);
+    }
+    .slider input {
+        width: 100%;
+        accent-color: var(--accent);
+    }
+    .readout {
+        margin: 0;
+        font-size: 0.8em;
+        color: var(--text-muted);
+    }
+</style>
+
+<script>
+    import { computeVectors, type Vector } from "../scripts/dft";
+    import { loadFont } from "../scripts/shapes/text";
+    import { pathToPoints } from "../scripts/shapes/fromPath";
+    import { fonts } from "../scripts/fonts";
+    import type { Complex } from "../scripts/complex";
+
+    const N = 1000; // sample points on the outline
+    const SIZE = 250; // the outline is scaled so its longest side is this
+
+    // The first (outer) outline of each glyph, so every shape is one closed loop
+    const SOURCES = {
+        H: { char: "H", font: fonts.grotesk },
+        o: { char: "o", font: fonts.grotesk },
+        pi: { char: "\u{1D70B}", font: fonts.math },
+    } as const;
+    type Key = keyof typeof SOURCES;
+
+    type Model = {
+        points: Complex[];
+        centre: Complex;
+        vectors: Vector[]; // non-zero frequencies, biggest first
+        tail: number[]; // tail[m] = sum of squared radii of vectors m, m+1, ...
+    };
+
+    const models = new Map<Key, Promise<Model>>();
+
+    function loadModel(key: Key): Promise<Model> {
+        if (!models.has(key)) {
+            models.set(
+                key,
+                (async () => {
+                    const src = SOURCES[key];
+                    const font = await loadFont(src.font);
+                    const d: string = font
+                        .getPath(src.char, 0, 0, 200)
+                        .toPathData(3);
+                    if (!d || d.includes("NaN")) throw new Error("bad outline");
+                    const points = pathToPoints(d.split(/(?=M)/)[0], N, SIZE);
+
+                    const all = computeVectors(points);
+                    const zero = all.find((v) => v.frequency === 0)!;
+                    const vectors = all.filter((v) => v.frequency !== 0);
+
+                    const tail = new Array<number>(vectors.length + 1).fill(0);
+                    for (let j = vectors.length - 1; j >= 0; j--) {
+                        tail[j] = tail[j + 1] + vectors[j].radius ** 2;
+                    }
+                    return {
+                        points,
+                        centre: {
+                            real: zero.radius * Math.cos(zero.phase),
+                            imag: zero.radius * Math.sin(zero.phase),
+                        },
+                        vectors,
+                        tail,
+                    };
+                })(),
+            );
+        }
+        return models.get(key)!;
+    }
+
+    document.querySelectorAll<HTMLElement>("[data-detail]").forEach((root) => {
+        const canvas = root.querySelector<HTMLCanvasElement>("canvas")!;
+        const ctx = canvas.getContext("2d")!;
+        const slider = root.querySelector<HTMLInputElement>("input")!;
+        const countEl = root.querySelector<HTMLElement>(".count")!;
+        const readout = root.querySelector<HTMLElement>(".readout")!;
+        const chips = root.querySelectorAll<HTMLButtonElement>(".chip");
+
+        let key: Key = "H";
+        let model: Model | null = null;
+        let w = 0;
+        let h = 0;
+        let fourier = "#4aa8f5";
+        let grey = "#a3aebf";
+        let frame = 0;
+
+        // Slider 0..100 -> 1..300 circles, with finer steps at the low end
+        const circlesFor = (v: number) =>
+            Math.max(1, Math.round(300 * (v / 100) ** 2));
+
+        function readColours() {
+            const css = getComputedStyle(document.documentElement);
+            fourier = css.getPropertyValue("--fourier").trim() || fourier;
+            grey = css.getPropertyValue("--grey-light").trim() || grey;
+            queueDraw();
+        }
+
+        function resize() {
+            const r = canvas.getBoundingClientRect();
+            if (r.width < 1) return;
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            w = r.width;
+            h = r.height;
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            queueDraw();
+        }
+
+        function queueDraw() {
+            cancelAnimationFrame(frame);
+            frame = requestAnimationFrame(draw);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            if (!model) return;
+
+            const m = Math.min(
+                circlesFor(Number(slider.value)),
+                model.vectors.length,
+            );
+            const s = (Math.min(w, h) * 0.78) / SIZE;
+            const X = (x: number) => w / 2 + x * s;
+            const Y = (y: number) => h / 2 + y * s;
+
+            // The original outline, dashed
+            ctx.save();
+            ctx.strokeStyle = grey;
+            ctx.globalAlpha = 0.9;
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([4, 5]);
+            ctx.beginPath();
+            model.points.forEach((p, i) =>
+                i === 0
+                    ? ctx.moveTo(X(p.real), Y(p.imag))
+                    : ctx.lineTo(X(p.real), Y(p.imag)),
+            );
+            ctx.closePath();
+            ctx.stroke();
+            ctx.restore();
+
+            // The curve traced by the m biggest circles
+            const S = 700;
+            ctx.strokeStyle = fourier;
+            ctx.lineWidth = 2.5;
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            for (let i = 0; i <= S; i++) {
+                const t = i / S;
+                let x = model.centre.real;
+                let y = model.centre.imag;
+                for (let j = 0; j < m; j++) {
+                    const v = model.vectors[j];
+                    const a = 2 * Math.PI * v.frequency * t + v.phase;
+                    x += v.radius * Math.cos(a);
+                    y += v.radius * Math.sin(a);
+                }
+                if (i === 0) ctx.moveTo(X(x), Y(y));
+                else ctx.lineTo(X(x), Y(y));
+            }
+            ctx.stroke();
+
+            countEl.textContent = String(m);
+            // Parseval: the mean-square error is the sum of the omitted squared radii
+            const err = (Math.sqrt(model.tail[m]) / SIZE) * 100;
+            readout.textContent = `Error: ${err < 0.01 ? "<0.01" : err.toFixed(2)}% of the shape's size`;
+        }
+
+        async function select(next: Key) {
+            key = next;
+            chips.forEach((c) =>
+                c.classList.toggle("active", c.dataset.shape === next),
+            );
+            readout.textContent = "Loading…";
+            try {
+                const loaded = await loadModel(next);
+                if (key !== next) return; // another shape was chosen meanwhile
+                model = loaded;
+                queueDraw();
+            } catch (err) {
+                console.error(err);
+                readout.textContent = "Could not load the shape.";
+            }
+        }
+
+        chips.forEach((c) =>
+            c.addEventListener("click", () => select(c.dataset.shape as Key)),
+        );
+        slider.addEventListener("input", queueDraw);
+
+        new ResizeObserver(resize).observe(canvas);
+        new MutationObserver(readColours).observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ["data-theme"],
+        });
+        window
+            .matchMedia("(prefers-color-scheme: dark)")
+            .addEventListener("change", readColours);
+
+        readColours();
+        resize();
+        select("H");
+    });
+</script>

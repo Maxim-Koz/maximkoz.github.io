@@ -1,0 +1,87 @@
+---
+title: 'Drawing with circles: Fourier series in TypeScript'
+description: 'A browser engine that turns any closed curve into a chain of rotating circles. Interactive demos, the maths that matters, and what I measured.'
+pubDate: 'Nov 6 2026'
+heroImage: '../../assets/fourier-series.png'
+pinned: true
+---
+
+import FourierSketch from '../../components/FourierSketch.astro';
+import FourierDetail from '../../components/FourierDetail.astro';
+import FourierWord from '../../components/FourierWord.astro';
+import 'katex/dist/katex.min.css';
+
+I built an engine that takes any closed curve, computes its discrete Fourier transform, and redraws it as a chain of rotating circles. It runs in the browser in TypeScript. **Try it: draw any shape in a single stroke.**
+
+<FourierSketch maxWidth="560px" />
+
+## At a glance
+
+- **What it does:** takes any closed outline (font glyphs, SVG paths, a hand-drawn stroke) and animates its Fourier series as epicycles.
+- **The maths that matters:** symmetric frequencies for smooth interpolation, and keeping the largest coefficients is the *optimal* truncation in the mean-square sense (Parseval), which I checked numerically.
+- **Key result:** a smooth outline is within 0.02% of its size using 10 circles. A cornered one needs about 200 for the same accuracy.
+- **Stack:** TypeScript, Canvas 2D, Astro. The DFT and animation loop are my own code. `opentype.js` supplies glyph outlines.
+
+## How it works
+
+A closed curve is a periodic function $z(t)$ taking values in the complex plane. Its Fourier series is a sum of rotating vectors:
+
+$$
+z(t) = \sum\nolimits_{k \in \mathbb{Z}} c_{k}\, e^{2\pi i k t}
+$$
+
+Term $k$ is a vector of length $|c_k|$ turning at $k$ rotations per unit time. Adding them tip to tail traces the curve. From $N$ samples, the coefficients come from the DFT, which I wrote directly from the definition:
+
+```ts
+for (let k = 0; k < N; k++) {
+  let sum = { real: 0, imag: 0 };
+  for (let n = 0; n < N; n++)
+    sum = add(sum, multiply(points[n], exp((-2 * Math.PI * k * n) / N)));
+  const c = divide(sum, N);
+  vectors.push({
+    radius: Math.hypot(c.real, c.imag),
+    frequency: k <= Math.floor(N / 2) ? k : k - N, // signed frequency
+    phase: Math.atan2(c.imag, c.real),
+  });
+}
+vectors.sort((a, b) => b.radius - a.radius);
+```
+
+Two choices decide whether the result looks right:
+
+1. **Symmetric frequencies.** At the sample points, `k` and `k − N` are indistinguishable, but between samples they are not.
+   - Taking `k` in `(−N/2, N/2]` gives the smoothest curve through the samples.
+   - Using `0 … N−1` produces wild loops.
+2. **Keep the largest coefficients.** By Parseval, the mean-square error of a truncation equals the sum of the omitted `|c_k|²`, so keeping the `M` biggest is the best `M`-term approximation. Sorting by radius is optimal, not just a visual choice.
+
+## How many circles?
+
+**Drag the slider.** The dashed line is the original outline and the blue line is what the circles trace. Compare a cornered shape with a smooth one.
+
+<FourierDetail maxWidth="560px" />
+
+- **Smooth shapes converge fast.** Corners are expensive: coefficients of a curve with corners decay like `1/k²`, so the maximum error falls only like `1/M`.
+- **In practice:** at 100 circles the maximum error on the H is about 0.3% of its height, roughly one pixel on a 300 px letter.
+- **Measured** (Space Grotesk Bold, 1000 points per outline, RMS error as a percentage of the shape's size):
+
+| Circles | H (corners) | o (smooth) |
+|---:|---:|---:|
+| 10 | 1.299% | 0.020% |
+| 50 | 0.127% | 0.004% |
+| 100 | 0.053% | 0.002% |
+| 400 | 0.010% | < 0.001% |
+
+## Shapes and words
+
+- **Any outline goes in.** Parametric formulas, SVG paths and font glyphs are all resampled to equal arc length, so the pen moves at constant speed and interpolation behaves the same everywhere.
+- **Words are several loops.** A single chain would draw bridge lines between letters. Each outline gets its own series, centred on its own mean, all driven by the same time `t`, so the whole word draws at once. A non-zero-winding fill leaves the holes empty.
+
+<FourierWord text="Hello" font="grotesk" density={1} circles={300} seconds={14} fade />
+
+## Limitations and next steps
+
+- **The DFT is O(N²).** Setup takes a few hundred milliseconds for roughly 1,500 to 4,500 points. An FFT is the obvious upgrade.
+- **Sampling is uniform.** Spending more points at corners would reduce the error where it is largest.
+- **No automated numerical tests yet.** I would add property tests: reconstruction with `M = N` reproduces the samples, and the Parseval identity holds.
+
+*Measurements: desktop Chromium. Error is measured at the sample points.*

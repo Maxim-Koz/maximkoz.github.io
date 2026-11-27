@@ -1,11 +1,17 @@
 ---
 interface Props {
     circles?: number;
+    maxWidth?: string;
 }
-const { circles = 120 } = Astro.props;
+const { circles = 120, maxWidth = "100%" } = Astro.props;
 ---
 
-<div class="sketch" data-sketch data-circles={circles}>
+<div
+    class="sketch"
+    data-sketch
+    data-circles={circles}
+    style={"maxWidth: ${maxWidth}"}
+>
     <canvas class="anim" aria-hidden="true"></canvas>
     <canvas
         class="ink"
@@ -84,9 +90,8 @@ const { circles = 120 } = Astro.props;
     import { presets } from "../scripts/shapes";
     import type { Complex } from "../scripts/complex";
 
-    // Turn a hand-drawn line into evenly spaced points around a closed loop
     function resample(raw: Complex[], n: number): Complex[] {
-        const pts = [...raw, raw[0]]; // close the loop
+        const pts = [...raw, raw[0]];
         const cum = [0];
         for (let i = 1; i < pts.length; i++) {
             cum.push(
@@ -125,7 +130,7 @@ const { circles = 120 } = Astro.props;
         const inkCtx = ink.getContext("2d")!;
 
         let stop: (() => void) | null = null;
-        let demoToken = 0; // lets a drawing cancel a demo that is still loading
+        let demoToken = 0;
         let demoPoints: Complex[] | null = null; // loaded once, then reused
         let line: Complex[] = [];
         let drawing = false;
@@ -169,7 +174,7 @@ const { circles = 120 } = Astro.props;
                 console.error("Could not build the demo shape", err);
                 return;
             }
-            if (token !== demoToken) return; // the visitor started drawing meanwhile
+            if (token !== demoToken) return;
             play(demoPoints);
         }
 
@@ -179,7 +184,7 @@ const { circles = 120 } = Astro.props;
         };
 
         ink.addEventListener("pointerdown", (e) => {
-            demoToken++; // cancel a demo that hasn't started yet
+            demoToken++;
             ink.setPointerCapture(e.pointerId);
             stop?.();
             stop = null;

@@ -4,31 +4,65 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const EMAIL = "maxim.kozlovskiy.contact@gmail.com";
 const LINKEDIN = "https://www.linkedin.com/in/maxim-kozlovskiy";
 
-const RATE = "";
+const RATE_UNIT = "per hour";
+
+const FORMAT = "Online";
+const LOCATION = "Kenilworth";
+const SESSION_LENGTH = "60 minutes";
+const AVAILABILITY = "weekday evening and weekends";
+
+const SAFEGUARDING = "";
+
+const YEAR_OF_STUDY = "1st year";
+
+const EXPERIENCE = "";
+
+const PHOTO = "";
+
+const FREE_TASTER = true;
+
+const testimonials: { quote: string; name: string }[] = [];
 
 const subjects = [
 	{
 		title: "GCSE Maths",
+		short: "GCSE",
+		rate: "£28",
 		text: "Foundation and Higher tier, from solid fundamentals to exam technique.",
 	},
 	{
 		title: "A-level Maths",
+		short: "A-level",
+		rate: "£32",
 		text: "Pure, Statistics and Mechanics, with plenty of exam-style practice.",
 	},
 	{
 		title: "A-level Further Maths",
+		short: "Further Maths",
+		rate: "£36",
 		text: "Further Pure and the applied options, for students aiming high.",
 	},
 ];
 
 const qualifications = [
-	{ label: "University", value: "Mathematics, University of Warwick" },
+	{
+		label: "University",
+		value: `Mathematics, University of Warwick${YEAR_OF_STUDY ? ` (${YEAR_OF_STUDY})` : ""}`,
+	},
 	{
 		label: "A-level",
 		value: "A*A*A*A\u2002·\u2002A* Maths\u2002·\u2002A* Further Maths",
 	},
 	{ label: "GCSE", value: "9 Maths\u2002·\u20029 Further Maths" },
 ];
+
+const lessonDetails = [
+	{ label: "Format", value: FORMAT },
+	{ label: "Location", value: LOCATION },
+	{ label: "Session length", value: SESSION_LENGTH },
+	{ label: "Availability", value: AVAILABILITY },
+	{ label: "Safeguarding", value: SAFEGUARDING },
+].filter((d) => d.value);
 
 const steps = [
 	{
@@ -37,13 +71,17 @@ const steps = [
 	},
 	{
 		title: "Plan together",
-		text: "We agree what to work on first, so sessions are focused from the start.",
+		text: FREE_TASTER
+			? "We start with a free taster session, agree what to work on first, and see if it's a good fit."
+			: "We agree what to work on first, so sessions are focused from the start.",
 	},
 	{
 		title: "Learn and practise",
 		text: "Regular sessions with worked examples and honest feedback.",
 	},
 ];
+
+const mailto = `mailto:${EMAIL}?subject=${encodeURIComponent("Maths Tutoring Enquiry")}&body=${encodeURIComponent("Student's year:\nSubject:\nExam board:\nWhat they'd like help with:\n")}`;
 ---
 
 <BaseLayout
@@ -51,7 +89,6 @@ const steps = [
 	description="One-to-one GCSE and A-level Maths and Further Maths tutoring from a University of Warwick Mathematics student."
 	background={false}
 >
-	<!-- ============ Hero ============ -->
 	<section class="hero">
 		<p class="eyebrow">One-to-one tutoring</p>
 		<h1>
@@ -69,9 +106,11 @@ const steps = [
 				How it works
 			</a>
 		</div>
+		{FREE_TASTER && (
+			<p class="taster">Free taster session for new students</p>
+		)}
 	</section>
 
-	<!-- ============ What I teach ============ -->
 	<section class="section">
 		<p class="eyebrow">Subjects</p>
 		<h2>What I teach</h2>
@@ -80,21 +119,40 @@ const steps = [
 				<li class="row row-large">
 					<h3>{s.title}</h3>
 					<p>{s.text}</p>
+					<div class="price">
+						<span class="amount">{s.rate}</span>
+						<span class="unit">{RATE_UNIT}</span>
+					</div>
 				</li>
 			))}
 		</ul>
 	</section>
 
-	<!-- ============ About me and qualifications ============ -->
 	<section class="section">
 		<p class="eyebrow">About me</p>
 		<h2>Taught by someone who sat these exams recently</h2>
-		<p class="about">
-			I'm studying Mathematics at the University of Warwick. I focus on
-			understanding why a method works, not just how to apply it, because
-			that's what holds up when a question looks unfamiliar.
-		</p>
-		<dl class="rows qualifications">
+		<div class="about-wrap">
+			{PHOTO && (
+				<img
+					class="photo"
+					src={PHOTO}
+					alt="Maxim Kozlovskiy"
+					width="120"
+					height="120"
+					loading="lazy"
+				/>
+			)}
+			<div class="about">
+				<p>
+					I'm studying Mathematics at the University of Warwick. I
+					focus on understanding why a method works, not just how to
+					apply it, because that's what holds up when a question looks
+					unfamiliar.
+				</p>
+				{EXPERIENCE && <p>{EXPERIENCE}</p>}
+			</div>
+		</div>
+		<dl class="rows facts">
 			{qualifications.map((q) => (
 				<div class="row">
 					<dt>{q.label}</dt>
@@ -104,7 +162,21 @@ const steps = [
 		</dl>
 	</section>
 
-	<!-- ============ How it works ============ -->
+	{lessonDetails.length > 0 && (
+		<section class="section">
+			<p class="eyebrow">Lessons</p>
+			<h2>How lessons run</h2>
+			<dl class="rows facts">
+				{lessonDetails.map((d) => (
+					<div class="row">
+						<dt>{d.label}</dt>
+						<dd>{d.value}</dd>
+					</div>
+				))}
+			</dl>
+		</section>
+	)}
+
 	<section class="section" id="how">
 		<p class="eyebrow">Process</p>
 		<h2>How it works</h2>
@@ -121,27 +193,35 @@ const steps = [
 		</ol>
 	</section>
 
-	<!-- ============ Enquire ============ -->
+	{testimonials.length > 0 && (
+		<section class="section">
+			<p class="eyebrow">Feedback</p>
+			<h2>What students and parents say</h2>
+			<div class="quotes">
+				{testimonials.map((t) => (
+					<figure class="quote">
+						<blockquote>{t.quote}</blockquote>
+						<figcaption>{t.name}</figcaption>
+					</figure>
+				))}
+			</div>
+		</section>
+	)}
+
 	<section class="section enquire" id="enquire">
 		<h2>Enquire about tutoring</h2>
 		<p>
 			Email me the student's year, the subject and the exam board, and
 			I'll reply with my availability.
-		</p>
-		<p class="rate">
-			{RATE ? (
+			{FREE_TASTER && (
 				<>
-					Rate: <strong>{RATE}</strong>
+					{" "}
+					<strong>The first session is a free taster.</strong>
 				</>
-			) : (
-				"Email me for current rates."
 			)}
 		</p>
 		<div class="actions">
-			<a
-				class="btn btn-primary"
-				href={`mailto:${EMAIL}?subject=Maths%20Tutoring%20Enquiry`}
-			>
+			<a class="btn btn-primary" href={mailto}>
 				{EMAIL}
 			</a>
 			<a
@@ -169,7 +249,6 @@ const steps = [
 		color: var(--text-muted);
 	}
 
-	/* ---------- Hero ---------- */
 	.hero {
 		display: flex;
 		flex-direction: column;
@@ -185,6 +264,11 @@ const steps = [
 		max-width: 30rem;
 		margin: 0;
 		font-size: 1.15em;
+		color: var(--text-muted);
+	}
+	.taster {
+		margin: 1.25rem 0 0;
+		font-size: 0.85em;
 		color: var(--text-muted);
 	}
 	.actions {
@@ -223,7 +307,6 @@ const steps = [
 		background: var(--accent-soft);
 	}
 
-	/* ---------- Sections ---------- */
 	.section {
 		margin-top: 8rem;
 		container-type: inline-size;
@@ -238,7 +321,6 @@ const steps = [
 		font-size: 1.15em;
 	}
 
-	/* A calm list: label on the left, detail on the right, thin dividers */
 	.rows {
 		margin: 0;
 		padding: 0;
@@ -263,34 +345,68 @@ const steps = [
 		color: var(--text-muted);
 	}
 	.row-large {
-		grid-template-columns: 15rem 1fr;
+		grid-template-columns: 15rem 1fr auto;
+	}
+	.price {
+		text-align: right;
+		white-space: nowrap;
+	}
+	.price .amount {
+		font-family: var(--font-space-grotesk);
+		font-size: 1.35em;
+		font-weight: 600;
+		color: var(--heading);
+	}
+	.price .unit {
+		margin-left: 0.35rem;
+		font-size: 0.75em;
+		color: var(--text-muted);
 	}
 	.row-large h3 {
 		font-size: 1.35em;
 	}
 
+	.about-wrap {
+		display: flex;
+		align-items: flex-start;
+		gap: 1.5rem;
+		margin: -1rem 0 2.5rem;
+	}
+	.photo {
+		flex-shrink: 0;
+		width: 120px;
+		height: 120px;
+		border: 1px solid var(--border);
+		border-radius: 50%;
+		object-fit: cover;
+	}
 	.about {
 		max-width: 34rem;
-		margin: -1rem 0 2.5rem;
 		font-size: 0.95em;
 		line-height: 1.7;
 		color: var(--text-muted);
 	}
-	.qualifications dt {
+	.about p {
+		margin: 0 0 0.75rem;
+	}
+	.about p:last-child {
+		margin-bottom: 0;
+	}
+
+	.facts dt {
 		font-size: 0.75em;
 		font-weight: 600;
 		letter-spacing: 0.1em;
 		text-transform: uppercase;
 		color: var(--text-muted);
 	}
-	.qualifications dd {
+	.facts dd {
 		font-family: var(--font-space-grotesk);
 		font-size: 1.15em;
 		font-weight: 600;
 		color: var(--heading);
 	}
 
-	/* ---------- Steps ---------- */
 	.steps {
 		display: grid;
 		grid-template-columns: 1fr;
@@ -324,7 +440,35 @@ const steps = [
 		}
 	}
 
-	/* ---------- Enquire ---------- */
+	.quotes {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+	}
+	.quote {
+		margin: 0;
+		padding: 1.5rem;
+		border: 1px solid var(--border);
+		border-radius: 20px;
+		background: var(--surface);
+	}
+	.quote blockquote {
+		margin: 0 0 0.75rem;
+		font-size: 0.95em;
+		line-height: 1.7;
+		color: var(--text);
+	}
+	.quote figcaption {
+		font-size: 0.8em;
+		font-weight: 600;
+		color: var(--text-muted);
+	}
+	@container (min-width: 640px) {
+		.quotes {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
 	.enquire {
 		padding: 3.5rem 2rem;
 		border: 1px solid var(--border);
@@ -342,15 +486,13 @@ const steps = [
 		font-size: 0.9em;
 		color: var(--text-muted);
 	}
-	.enquire .rate {
-		font-size: 0.95em;
+	.enquire p strong {
 		color: var(--text);
 	}
 	.enquire .actions {
 		justify-content: center;
 	}
 
-	/* ---------- Small screens ---------- */
 	@media (max-width: 640px) {
 		.section {
 			margin-top: 5.5rem;
@@ -360,6 +502,12 @@ const steps = [
 			grid-template-columns: 1fr;
 			gap: 0.35rem;
 			padding: 1.25rem 0;
+		}
+		.price {
+			text-align: left;
+		}
+		.about-wrap {
+			flex-direction: column;
 		}
 		.enquire {
 			padding: 2.5rem 1.25rem;
