@@ -6,7 +6,7 @@ import rehypeKatex from 'rehype-katex';
 
 
 export default defineConfig({
-	site: 'https://maxim-koz.github.io',
+	site: 'https://maxim-koz.github.io/',
 	integrations: [mdx(), sitemap()],
 	markdown: {
 		remarkPlugins: [remarkMath],
