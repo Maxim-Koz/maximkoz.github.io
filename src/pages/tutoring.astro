@@ -7,7 +7,7 @@ const LINKEDIN = "https://www.linkedin.com/in/maxim-kozlovskiy";
 const RATE_UNIT = "per hour";
 
 const FORMAT = "Online";
-const LOCATION = "Kenilworth";
+const LOCATION = "";
 const SESSION_LENGTH = "60 minutes";
 const AVAILABILITY = "weekday evening and weekends";
 
@@ -17,7 +17,7 @@ const YEAR_OF_STUDY = "1st year";
 
 const EXPERIENCE = "";
 
-const PHOTO = "";
+import PHOTO from "../assets/LI_profile.jpg";
 
 const FREE_TASTER = true;
 
@@ -135,7 +135,7 @@ const mailto = `mailto:${EMAIL}?subject=${encodeURIComponent("Maths Tutoring Enq
 			{PHOTO && (
 				<img
 					class="photo"
-					src={PHOTO}
+					src={PHOTO.src}
 					alt="Maxim Kozlovskiy"
 					width="120"
 					height="120"
